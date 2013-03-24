@@ -63,6 +63,7 @@ stonelikenode("onefootstep", "One Footstep")
 stonelikenode("coalblock", "Coalblock")
 stonelikenode("dried_dirt", "Dried Dirt")
 stonelikenode("wall", "Wall")
+stonelikenode("stonebrick", "Alternative Stone Brick")
 
 monode("goldbrick", "Goldbrick", LIGHT_MAX-1)
 monode("goldblock", "Goldblock", LIGHT_MAX-1)
@@ -129,6 +130,7 @@ minetest.register_node("extrablocks:fence_"..name, {
 end
 fencelikenode("special", "Specialfence")
 fencelikenode("repellent", "Repellent Fence")
+fencelikenode("stonebrick", "Alternative Stone Brick Fence")
 
 local function raillikenode(name, desc)
 local img = "extrablocks_"..name..".png"
