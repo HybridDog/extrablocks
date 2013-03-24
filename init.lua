@@ -1,5 +1,3 @@
---textures from: gamiano.de, gimp, wz2100, chromiumBSU, minetest, minecraft, ...
-
 local SOUND = default.node_sound_stone_defaults()
 local A = 190,
 --Crafting--------------------
@@ -171,38 +169,34 @@ minetest.register_node("extrablocks:torte", {
 	groups = {crumbly=3},
 	sounds = default.node_sound_dirt_defaults,
 	on_place = function(itemstack, placer, pointed_thing)
-			if pointed_thing.type ~= "node" then
-				return itemstack
-			end
+		if pointed_thing.type ~= "node" then
+			return itemstack
+		end
 
-			local slabpos = nil
-			local slabnode = nil
-			local p0 = pointed_thing.under
-			local p1 = pointed_thing.above
-			local n0 = minetest.env:get_node(p0)
-			local n1 = minetest.env:get_node(p1)
-			if n0.name == "extrablocks:torte" then
-				slabpos = p0
-				slabnode = n0
-			elseif n1.name == "extrablocks:torte" then
-				slabpos = p1
-				slabnode = n1
+		local slabpos = nil
+		local slabnode = nil
+		local p0 = pointed_thing.under
+		local p1 = pointed_thing.above
+		local n0 = minetest.env:get_node(p0)
+		if n0.name == "extrablocks:torte" and p0.y+1 == p1.y then
+			slabpos = p0
+			slabnode = n0
+		end
+		if slabpos then
+			minetest.env:remove_node(slabpos)
+			local fakestack = ItemStack("extrablocks:tort")
+			pointed_thing.above = slabpos
+			fakestack = minetest.item_place(fakestack, placer, pointed_thing)
+			if not fakestack or fakestack:is_empty() then
+				itemstack:take_item(1)
+			else
+				minetest.env:set_node(slabpos, slabnode)
 			end
-			if slabpos then
-				minetest.env:remove_node(slabpos)
-				local fakestack = ItemStack("extrablocks:tort")
-				pointed_thing.above = slabpos
-				fakestack = minetest.item_place(fakestack, placer, pointed_thing)
-				if not fakestack or fakestack:is_empty() then
-					itemstack:take_item(1)
-				else
-					minetest.env:set_node(slabpos, slabnode)
-				end
-				return itemstack
-			end
-			
-			return minetest.item_place(itemstack, placer, pointed_thing)
-		end,
+			return itemstack
+		end
+
+		return minetest.item_place(itemstack, placer, pointed_thing)
+	end,
 	
 })
 
