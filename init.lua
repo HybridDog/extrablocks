@@ -64,17 +64,19 @@ stonelikenode("onefootstep", "One Footstep")
 stonelikenode("coalblock", "Coalblock")
 stonelikenode("dried_dirt", "Dried Dirt")
 stonelikenode("wall", "Wall")
+stonelikenode("mossywall", "Mossy Wall")
+stonelikenode("mossystonebrick", "Mossy Stone Brick")
 stonelikenode("stonebrick", "Alternative Stone Brick")
 
-monode("goldbrick", "Goldbrick", LIGHT_MAX-1)
-monode("goldblock", "Goldblock", LIGHT_MAX-1)
-monode("gold", "Gold", LIGHT_MAX-1)
-monode("acid", "Acid", LIGHT_MAX-1)
+monode("goldbrick", "Goldbrick", 15)
+monode("goldblock", "Goldblock", 15)
+monode("gold", "Gold", 15)
+monode("acid", "Acid", 15)
 
 minetest.register_node("extrablocks:goldstone", {
 	description = "Gold in Stone",
 	tile_images = {"default_stone.png^extrablocks_goldstone.png"},
-	light_source = LIGHT_MAX-1,
+	light_source = 15,
 	groups = {cracky=3},
 	sounds = default.node_sound_stone_defaults(),
 })
@@ -279,3 +281,5 @@ generate_ore("extrablocks:lapis_lazuli_ore","default:stone", minp, maxp, seed+11
 generate_ore("extrablocks:marble_ore",		"default:stone", minp, maxp, seed+116, 1/128,		20, -100,	 -32)
 generate_ore("extrablocks:marble_ore",		"default:stone", minp, maxp, seed+117, 1/10/10/10,	3,	-100,	 -90)
 end)
+
+dofile(minetest.get_modpath("extrablocks").."/natur.lua")
