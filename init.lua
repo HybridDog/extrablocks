@@ -2,27 +2,64 @@ local SOUND = default.node_sound_stone_defaults()
 local A = 190,
 --Crafting--------------------
 minetest.register_craft({
-	output = "extrablocks:coalblock",
-	recipe = {
-		{"default:coal_lump","default:coal_lump","default:coal_lump"},
-		{"default:coal_lump","default:coal_lump","default:coal_lump"},
-		{"default:coal_lump","default:coal_lump","default:coal_lump"},
-	}
-})
-
-minetest.register_craft({
-	output = "extrablocks:rinde 4",
-	recipe = {
-		{"default:tree","default:tree"},
-		{"default:tree","default:tree"},
-	}
-})
-
-minetest.register_craft({
-	output = "extrablocks:zucker",
+	output = "extrablocks:sugar 6",
 	recipe = {
 		{"default:papyrus", "default:papyrus"},
+		{"default:leaves", "default:leaves"},
 	}
+})
+
+minetest.register_craft({
+	output = "extrablocks:flour 8",
+	recipe = {
+		{"extrablocks:wheat"},
+	}
+})
+
+minetest.register_craft({
+	output = "extrablocks:muffin_uncooked 7",
+	recipe = {
+		{"extrablocks:sugar", "extrablocks:sugar", "extrablocks:sugar"},
+		{"extrablocks:flour", "extrablocks:flour", "extrablocks:flour"},
+		{"default:paper", "bucket:bucket_water", "default:paper"},
+	},
+	replacements = {{"bucket:bucket_water", "bucket:bucket_empty"}},
+})
+
+minetest.register_craft({
+	output = "extrablocks:torte 2",
+	recipe = {
+		{"extrablocks:muffin", "extrablocks:sugar", "extrablocks:muffin"},
+		{"extrablocks:flour", "extrablocks:flour", "extrablocks:flour"},
+		{"bucket:bucket_water", "extrablocks:muffin", "bucket:bucket_water"},
+	},
+	replacements = {{"bucket:bucket_water", "bucket:bucket_empty"}, {"bucket:bucket_water", "bucket:bucket_empty"}},
+})
+
+minetest.register_craft({
+	output = "extrablocks:marble_tiling 4",
+	recipe = {
+		{"extrablocks:marble_clean", "extrablocks:marble_clean"},
+		{"extrablocks:marble_clean", "extrablocks:marble_clean"},
+	}
+})
+
+minetest.register_craft({
+	type = "shapeless",
+	output = "extrablocks:lapis_lazuli_block",
+	recipe = {"extrablocks:lapis_lazuli 9"},
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "extrablocks:muffin",
+	recipe = "extrablocks:muffin_uncooked",
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "extrablocks:marble_clean",
+	recipe = "extrablocks:marble_ore",
 })
 
 --Node------------------------------------------------------------------------------------
@@ -46,27 +83,18 @@ minetest.register_node("extrablocks:"..name, {
 })
 end
 
-local function stonelikenode(name, desc)
-monode(name, desc, default.node_sound_stone_defaults(), 0)
+local STONELIKENODES = {
+"marble_ore", "marble_tiling", "marble_clean", "lapis_lazuli_block", "previous_cobble", "space", "special", "onefootstep", "coalblock",
+"dried_dirt", "wall", "mossywall", "mossystonebrick", "stonebrick"}
+local STONELIKENODES_DESCRIPTIONS = {
+"Marble Ore", "Tiling", "Marble", "Lapis Lazuli Block", "Previous Cobblestone", "Space", "special", "One Footstep", "Coalblock",
+"Dried Dirt", "Wall", "Mossy Wall", "Mossy Stone Brick", "Alternative Stone Brick"}
+
+for i, n in ipairs(STONELIKENODES) do
+	monode(n, STONELIKENODES_DESCRIPTIONS[i], default.node_sound_stone_defaults(), 0)
 end
 
-stonelikenode("marble_ore", "Marble Ore")
-stonelikenode("marble_tiling", "Tiling")
-stonelikenode("marble_clean", "Marble")
-
 orenode("lapis_lazuli", "extrablocks:lapis_lazuli_lump", "Lapis Lazuli Ore")
-stonelikenode("lapis_lazuli_block", "Lapis Lazuli Block")
-
-stonelikenode("previous_cobble", "Previous Cobblestone")
-stonelikenode("space", "Space")
-stonelikenode("special", "special")
-stonelikenode("onefootstep", "One Footstep")
-stonelikenode("coalblock", "Coalblock")
-stonelikenode("dried_dirt", "Dried Dirt")
-stonelikenode("wall", "Wall")
-stonelikenode("mossywall", "Mossy Wall")
-stonelikenode("mossystonebrick", "Mossy Stone Brick")
-stonelikenode("stonebrick", "Alternative Stone Brick")
 
 monode("goldbrick", "Goldbrick", 15)
 monode("goldblock", "Goldblock", 15)
@@ -87,11 +115,12 @@ local function plantnode(name, desc, selbox)
 minetest.register_node("extrablocks:"..name, {
 	description = desc,
 	tile_images = {"extrablocks_"..name..".png"},
-	groups = {fleshy=3,flammable=2},
+	groups = {snappy = 3, flammable=2, flora=1},
 	sounds = default.node_sound_leaves_defaults(),
 	drawtype = "plantlike",
 	paramtype = "light",
 	walkable = false,
+	buildable_to = true,
 	selection_box = {type = "fixed",fixed = selbox},
 })
 end
@@ -231,55 +260,48 @@ minetest.register_craftitem("extrablocks:muffin", {
 })
 
 
-local function generate_ore(name, wherein, minp, maxp, seed, chunks_per_volume, ore_per_chunk, height_min, height_max)
-	if maxp.y < height_min or minp.y > height_max then
-		return
-	end
-	local y_min = math.max(minp.y, height_min)
-	local y_max = math.min(maxp.y, height_max)
-	local volume = (maxp.x-minp.x+1)*(y_max-y_min+1)*(maxp.z-minp.z+1)
-	local pr = PseudoRandom(seed)
-	local num_chunks = math.floor(chunks_per_volume * volume)
-	local chunk_size = 3
-	if ore_per_chunk <= 4 then
-		chunk_size = 2
-	end
-	local inverse_chance = math.floor(chunk_size*chunk_size*chunk_size / ore_per_chunk)
-	--print("generate_ore num_chunks: "..dump(num_chunks))
-	for i=1,num_chunks do
-	if (y_max-chunk_size+1 <= y_min) then return end
-		local y0 = pr:next(y_min, y_max-chunk_size+1)
-		if y0 >= height_min and y0 <= height_max then
-			local x0 = pr:next(minp.x, maxp.x-chunk_size+1)
-			local z0 = pr:next(minp.z, maxp.z-chunk_size+1)
-			local p0 = {x=x0, y=y0, z=z0}
-			for x1=0,chunk_size-1 do
-			for y1=0,chunk_size-1 do
-			for z1=0,chunk_size-1 do
-				if pr:next(1,inverse_chance) == 1 then
-					local x2 = x0+x1
-					local y2 = y0+y1
-					local z2 = z0+z1
-					local p2 = {x=x2, y=y2, z=z2}
-					if minetest.env:get_node(p2).name == wherein then
-						minetest.env:set_node(p2, {name=name})
-					end
-				end
-			end
-			end
-			end
-		end
-	end
-	--print("generate_ore done")
-end
 
-minetest.register_on_generated(function(minp, maxp, seed)
-generate_ore("extrablocks:goldstone",		"default:stone", minp, maxp, seed+112, 1/11/11/11,	4,	-31000, -450)
+
+local function ore(name, scarcity, num_ores, size, min, max)
+	minetest.register_ore({
+		ore_type	 	= "scatter",
+		ore				= name,
+		wherein			= "default:stone",
+		clust_scarcity 	= scarcity,
+		clust_num_ores	= num_ores,
+		clust_size		= size,
+		height_min		= min,
+		height_max		= max,
+	})
+end
+ore("extrablocks:lapis_lazuli_ore", 10*10*10, 3, 10, -150, -80)
+ore("extrablocks:lapis_lazuli_ore", 7*7*7, 3, 10, -300, -150)
+ore("extrablocks:goldstone", 11*11*11, 4, 11, -1000, -450)
+ore("extrablocks:goldstone", 8*8*8, 4, 11, -31000, -1000)
+minetest.register_ore({
+	ore_type	 	= "sheet",
+	ore				= "extrablocks:marble_ore",
+	wherein			= "default:stone",
+	clust_size		= 20,
+	height_min		= -100,
+	height_max		= -32,
+	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=13, octaves=3, persist=0.70}
+})
+minetest.register_ore({
+	ore_type	 	= "sheet",
+	ore				= "extrablocks:marble_ore",
+	wherein			= "default:stone",
+	clust_size		= 20,
+	height_min		= -100,
+	height_max		= -90,
+	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=112, octaves=3, persist=0.70}
+})
+
+--[[generate_ore("extrablocks:goldstone",		"default:stone", minp, maxp, seed+112, 1/11/11/11,	4,	-31000, -450)
 generate_ore("extrablocks:goldstone",		"default:stone", minp, maxp, seed+113, 1/11/11/11,	4,	-31000, -1000)
 generate_ore("extrablocks:lapis_lazuli_ore","default:stone", minp, maxp, seed+114, 1/10/10/10,	3,	-300,	 -80)
 generate_ore("extrablocks:lapis_lazuli_ore","default:stone", minp, maxp, seed+115, 1/10/10/10,	3,	-300,	 -150)
 generate_ore("extrablocks:marble_ore",		"default:stone", minp, maxp, seed+116, 1/128,		20, -100,	 -32)
 generate_ore("extrablocks:marble_ore",		"default:stone", minp, maxp, seed+117, 1/10/10/10,	3,	-100,	 -90)
-end)
-
+]]
 dofile(minetest.get_modpath("extrablocks").."/natur.lua")
