@@ -1,74 +1,13 @@
-local SOUND = default.node_sound_stone_defaults()
-local A = 190,
 --Crafting--------------------
-minetest.register_craft({
-	output = "extrablocks:sugar 6",
-	recipe = {
-		{"default:papyrus", "default:papyrus"},
-		{"default:leaves", "default:leaves"},
-	}
-})
-
-minetest.register_craft({
-	output = "extrablocks:flour 8",
-	recipe = {
-		{"extrablocks:wheat"},
-	}
-})
-
-minetest.register_craft({
-	output = "extrablocks:muffin_uncooked 7",
-	recipe = {
-		{"extrablocks:sugar", "extrablocks:sugar", "extrablocks:sugar"},
-		{"extrablocks:flour", "extrablocks:flour", "extrablocks:flour"},
-		{"default:paper", "bucket:bucket_water", "default:paper"},
-	},
-	replacements = {{"bucket:bucket_water", "bucket:bucket_empty"}},
-})
-
-minetest.register_craft({
-	output = "extrablocks:torte 2",
-	recipe = {
-		{"extrablocks:muffin", "extrablocks:sugar", "extrablocks:muffin"},
-		{"extrablocks:flour", "extrablocks:flour", "extrablocks:flour"},
-		{"bucket:bucket_water", "extrablocks:muffin", "bucket:bucket_water"},
-	},
-	replacements = {{"bucket:bucket_water", "bucket:bucket_empty"}, {"bucket:bucket_water", "bucket:bucket_empty"}},
-})
-
-minetest.register_craft({
-	output = "extrablocks:marble_tiling 4",
-	recipe = {
-		{"extrablocks:marble_clean", "extrablocks:marble_clean"},
-		{"extrablocks:marble_clean", "extrablocks:marble_clean"},
-	}
-})
-
-minetest.register_craft({
-	type = "shapeless",
-	output = "extrablocks:lapis_lazuli_block",
-	recipe = {"extrablocks:lapis_lazuli 9"},
-})
-
-minetest.register_craft({
-	type = "cooking",
-	output = "extrablocks:muffin",
-	recipe = "extrablocks:muffin_uncooked",
-})
-
-minetest.register_craft({
-	type = "cooking",
-	output = "extrablocks:marble_clean",
-	recipe = "extrablocks:marble_ore",
-})
+dofile(minetest.get_modpath("extrablocks").."/crafting.lua")
 
 --Node------------------------------------------------------------------------------------
-local function orenode(name, drops, desc)
+local function orenode(name, desc)
 minetest.register_node("extrablocks:"..name.."_ore", {
 	description = desc,
 	tile_images = {"default_stone.png^extrablocks_"..name.."_ore.png"},
 	groups = {cracky=3},
-	drop = drops,
+	drop = "extrablocks:"..name.."_lump",
 	sounds = default.node_sound_stone_defaults(),
 })
 end
@@ -84,17 +23,28 @@ minetest.register_node("extrablocks:"..name, {
 end
 
 local STONELIKENODES = {
-"marble_ore", "marble_tiling", "marble_clean", "lapis_lazuli_block", "previous_cobble", "space", "special", "onefootstep", "coalblock",
-"dried_dirt", "wall", "mossywall", "mossystonebrick", "stonebrick"}
-local STONELIKENODES_DESCRIPTIONS = {
-"Marble Ore", "Tiling", "Marble", "Lapis Lazuli Block", "Previous Cobblestone", "Space", "special", "One Footstep", "Coalblock",
-"Dried Dirt", "Wall", "Mossy Wall", "Mossy Stone Brick", "Alternative Stone Brick"}
+	{"marble_ore", "Marble Ore"},
+	{"marble_tiling", "Tiling"},
+	{"marble_clean", "Marble"},
+	{"lapis_lazuli_block", "Lapis Lazuli Block"},
+	{"previous_cobble", "Previous Cobblestone"},
+	{"space", "Space"},
+	{"special", "Special"},
+	{"onefootstep", "One Footstep"},
+	{"coalblock", "Coalblock"},
+	{"dried_dirt", "Dried Dirt"},
+	{"wall", "Wall"},
+	{"mossywall", "Mossy Wall"},
+	{"mossystonebrick", "Mossy Stone Brick"},
+	{"stonebrick", "Alternative Stone Brick"},
+}
 
-for i, n in ipairs(STONELIKENODES) do
-	monode(n, STONELIKENODES_DESCRIPTIONS[i], default.node_sound_stone_defaults(), 0)
+for i in ipairs(STONELIKENODES) do
+	monode(STONELIKENODES[i][1], STONELIKENODES[i][2], 0)
 end
 
-orenode("lapis_lazuli", "extrablocks:lapis_lazuli_lump", "Lapis Lazuli Ore")
+orenode("lapis_lazuli", "Lapis Lazuli Ore")
+orenode("iringnite", "Iringnite Ore")
 
 monode("goldbrick", "Goldbrick", 15)
 monode("goldblock", "Goldblock", 15)
@@ -107,6 +57,15 @@ minetest.register_node("extrablocks:goldstone", {
 	light_source = 15,
 	groups = {cracky=3},
 	sounds = default.node_sound_stone_defaults(),
+})
+
+minetest.register_node("extrablocks:iringnite_block", {
+	description = "Iringnite Block",
+	tiles = {"extrablocks_iringnite_block.png"},
+	groups = {cracky=1,level=2},
+	sounds = default.node_sound_stone_defaults({
+		dig = {name="extrablocks_iringnite", gain=0.4},
+	}),
 })
 
 
@@ -144,12 +103,11 @@ minetest.register_node("extrablocks:pot", {
 	drawtype = "nodebox",
 	tile_images = {"extrablocks_repellent.png"},
 	groups = {cracky=1},
-	sounds = SOUND,
+	sounds = default.node_sound_stone_defaults(),
 	paramtype = "light",
 	paramtype2 = "facedir",
 	node_box = KORB,
 	selection_box = KORB,
-	sounds = SOUND,
 })
 
 local function fencelikenode(name, desc)
@@ -252,6 +210,8 @@ moitem("lapis_lazuli_lump", "Lapis Lazuli")
 moitem("flour", "Flour")
 moitem("sugar", "Sugar")
 moitem("muffin_uncooked", "Put me into the furnace!")
+moitem("iringnite_lump", "Iringnite Lump")
+moitem("iringnite_ingot", "Iringnite Ingot")
 
 minetest.register_craftitem("extrablocks:muffin", {
 	description = "Muffin",
@@ -265,7 +225,7 @@ minetest.register_craftitem("extrablocks:muffin", {
 local function ore(name, scarcity, num_ores, size, min, max)
 	minetest.register_ore({
 		ore_type	 	= "scatter",
-		ore				= name,
+		ore				= "extrablocks:"..name,
 		wherein			= "default:stone",
 		clust_scarcity 	= scarcity,
 		clust_num_ores	= num_ores,
@@ -274,10 +234,13 @@ local function ore(name, scarcity, num_ores, size, min, max)
 		height_max		= max,
 	})
 end
-ore("extrablocks:lapis_lazuli_ore", 10*10*10, 3, 10, -150, -80)
-ore("extrablocks:lapis_lazuli_ore", 7*7*7, 3, 10, -300, -150)
-ore("extrablocks:goldstone", 11*11*11, 4, 11, -1000, -450)
-ore("extrablocks:goldstone", 8*8*8, 4, 11, -31000, -1000)
+ore("lapis_lazuli_ore", 10*10*10, 3, 10, -150, -80)
+ore("lapis_lazuli_ore", 7*7*7, 3, 10, -300, -150)
+ore("goldstone", 11*11*11, 4, 11, -1000, -450)
+ore("goldstone", 8*8*8, 4, 11, -31000, -1000)
+ore("iringnite_ore", 40*40*40, 4, 11, -2000, -1000)
+ore("iringnite_ore", 20*20*20, 4, 11, -3000, -2000)
+ore("iringnite_ore", 11*11*11, 4, 11, -31000, -3000)
 minetest.register_ore({
 	ore_type	 	= "sheet",
 	ore				= "extrablocks:marble_ore",
