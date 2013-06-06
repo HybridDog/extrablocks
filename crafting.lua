@@ -53,6 +53,14 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
+	output = "extrablocks:fokni_gnebbrick",
+	recipe = {
+		{"extrablocks:fokni_gneb", "extrablocks:fokni_gneb"},
+		{"extrablocks:fokni_gneb", "extrablocks:fokni_gneb"},
+	}
+})
+
+minetest.register_craft({
 	output = "extrablocks:goldbrick",
 	recipe = {
 		{"extrablocks:gold", "extrablocks:gold"},
@@ -126,6 +134,7 @@ end
 
 fencecraft("special")
 fencecraft("stonebrick")
+fencecraft("fokni_gneb")
 
 minetest.register_craft({
 	type = "cooking",
@@ -143,6 +152,12 @@ minetest.register_craft({
 	type = "cooking",
 	output = "extrablocks:iringnite_ingot",
 	recipe = "extrablocks:iringnite_lump",
+})
+
+minetest.register_craft({
+	type = "cooking",
+	output = "extrablocks:fokni_gneb",
+	recipe = "extrablocks:fokni_gneb_lump",
 })
 
 minetest.register_craft({

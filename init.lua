@@ -37,6 +37,8 @@ local STONELIKENODES = {
 	{"mossywall", "Mossy Wall"},
 	{"mossystonebrick", "Mossy Stone Brick"},
 	{"stonebrick", "Alternative Stone Brick"},
+	{"fokni_gneb", "Fokni Gneb"},
+	{"fokni_gnebbrick", "Fokni Gneb Brick"},
 }
 
 for i in ipairs(STONELIKENODES) do
@@ -45,6 +47,7 @@ end
 
 orenode("lapis_lazuli", "Lapis Lazuli Ore")
 orenode("iringnite", "Iringnite Ore")
+orenode("fokni_gneb", "Fokni Gneb Ore")
 
 monode("goldbrick", "Goldbrick", 15)
 monode("goldblock", "Goldblock", 15)
@@ -73,42 +76,21 @@ minetest.register_node("extrablocks:iringnite_block", {
 local function plantnode(name, desc, selbox)
 minetest.register_node("extrablocks:"..name, {
 	description = desc,
-	tile_images = {"extrablocks_"..name..".png"},
-	groups = {snappy = 3, flammable=2, flora=1},
+	inventory_image = "extrablocks_"..name..".png",
+	tiles = {"extrablocks_"..name..".png"},
+	groups = {snappy=3,flammable=2,flora=1,attached_node=1},
 	sounds = default.node_sound_leaves_defaults(),
 	drawtype = "plantlike",
 	paramtype = "light",
 	walkable = false,
 	buildable_to = true,
 	selection_box = {type = "fixed",fixed = selbox},
+	furnace_burntime = 1,
 })
 end
 plantnode("wheat", "Weizen", {-1/3, -1/2, -1/3, 1/3, 1/4, 1/3})
 plantnode("dry_grass", "Dry Grass", {-1/3, -1/2, -1/3, 1/3, 1/4, 1/3})
 ---------------------------------------------------pl-----------------------------------------------------------------
-
-local KORB = {
-	type = "fixed",
-	fixed = {
-			{-0.5,	-0.5,	-0.5,		0.5,	-0.49,	0.5},
-			{-0.5,	-0.5,	-0.5,		-0.49,	0.5,	0.5},
-			{-0.5,	-0.5,	-0.5,		0.5,	0.5,	-0.49},
-			{-0.5,	-0.5,	0.49,		0.5,	0.5,	0.5},
-			{0.49,	-0.5,	-0.5,		0.5,	0.5,	0.5},
-		},
-	}
-
-minetest.register_node("extrablocks:pot", {
-	description = "Pot",
-	drawtype = "nodebox",
-	tile_images = {"extrablocks_repellent.png"},
-	groups = {cracky=1},
-	sounds = default.node_sound_stone_defaults(),
-	paramtype = "light",
-	paramtype2 = "facedir",
-	node_box = KORB,
-	selection_box = KORB,
-})
 
 local function fencelikenode(name, desc)
 local img, img2 = "extrablocks_"..name..".png", "extrablocks_fence_"..name..".png"
@@ -129,6 +111,7 @@ end
 fencelikenode("special", "Specialfence")
 fencelikenode("repellent", "Repellent Fence")
 fencelikenode("stonebrick", "Alternative Stone Brick Fence")
+fencelikenode("fokni_gneb", "Fokni Gneb Fence")
 
 local function raillikenode(name, desc)
 local img = "extrablocks_"..name..".png"
@@ -212,6 +195,7 @@ moitem("sugar", "Sugar")
 moitem("muffin_uncooked", "Put me into the furnace!")
 moitem("iringnite_lump", "Iringnite Lump")
 moitem("iringnite_ingot", "Iringnite Ingot")
+moitem("fokni_gneb_lump", "Fokni Gneb Lump")
 
 minetest.register_craftitem("extrablocks:muffin", {
 	description = "Muffin",
@@ -248,7 +232,7 @@ minetest.register_ore({
 	clust_size		= 20,
 	height_min		= -100,
 	height_max		= -32,
-	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=13, octaves=3, persist=0.70}
+	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=113, octaves=3, persist=0.70}
 })
 minetest.register_ore({
 	ore_type	 	= "sheet",
@@ -258,6 +242,16 @@ minetest.register_ore({
 	height_min		= -100,
 	height_max		= -90,
 	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=112, octaves=3, persist=0.70}
+})
+
+minetest.register_ore({
+	ore_type	 	= "sheet",
+	ore				= "extrablocks:fokni_gneb_ore",
+	wherein			= "default:stone",
+	clust_size		= 20,
+	height_min		= -100,
+	height_max		= -32,
+	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=114, octaves=3, persist=0.70}
 })
 
 --[[generate_ore("extrablocks:goldstone",		"default:stone", minp, maxp, seed+112, 1/11/11/11,	4,	-31000, -450)
