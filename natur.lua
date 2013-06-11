@@ -7,6 +7,7 @@ local function moss(input, output)
 		action = function(pos)
 			if not minetest.env:find_node_near(pos, 3, output) then
 				minetest.env:add_node(pos, {name=output})
+				print("[extrablocks] "..input.." changed to "..output.." at ("..pos.x..", "..pos.y..", "..pos.z..")")
 			end
 		end,
 	})
