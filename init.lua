@@ -1,6 +1,3 @@
---Crafting--------------------
-dofile(minetest.get_modpath("extrablocks").."/crafting.lua")
-
 --Node------------------------------------------------------------------------------------
 local function orenode(name, desc)
 minetest.register_node("extrablocks:"..name.."_ore", {
@@ -254,11 +251,14 @@ minetest.register_ore({
 	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=114, octaves=3, persist=0.70}
 })
 
---[[generate_ore("extrablocks:goldstone",		"default:stone", minp, maxp, seed+112, 1/11/11/11,	4,	-31000, -450)
-generate_ore("extrablocks:goldstone",		"default:stone", minp, maxp, seed+113, 1/11/11/11,	4,	-31000, -1000)
-generate_ore("extrablocks:lapis_lazuli_ore","default:stone", minp, maxp, seed+114, 1/10/10/10,	3,	-300,	 -80)
-generate_ore("extrablocks:lapis_lazuli_ore","default:stone", minp, maxp, seed+115, 1/10/10/10,	3,	-300,	 -150)
-generate_ore("extrablocks:marble_ore",		"default:stone", minp, maxp, seed+116, 1/128,		20, -100,	 -32)
-generate_ore("extrablocks:marble_ore",		"default:stone", minp, maxp, seed+117, 1/10/10/10,	3,	-100,	 -90)
-]]
-dofile(minetest.get_modpath("extrablocks").."/natur.lua")
+
+extrablocks = {}
+
+dofile(minetest.get_modpath("extrablocks").."/settings.lua")
+if extrablocks.enable_moss then
+	dofile(minetest.get_modpath("extrablocks").."/natur.lua")
+end
+if extrablocks.allow_crafting then
+	dofile(minetest.get_modpath("extrablocks").."/crafting.lua")
+end
+print("[extrablocks] loaded")
