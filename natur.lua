@@ -16,3 +16,5 @@ end
 moss("default:cobble",	"default:mossycobble")
 moss("default:stonebrick",	"extrablocks:mossystonebrick")
 moss("extrablocks:wall",	"extrablocks:mossywall")
+moss("nuke:iron_tnt",	"nuke:mossy_tnt")
+moss("nuke:mese_tnt",	"nuke:mossy_tnt")
