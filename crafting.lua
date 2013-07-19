@@ -1,11 +1,10 @@
 -- Crafting of extrablocks
 
 minetest.register_craft({
-	output = "wool:white 9",
+	output = "extrablocks:eating_chest",
 	recipe = {
-		{"default:leaves", "default:leaves", "default:leaves"},
-		{"default:leaves", "default:leaves", "default:leaves"},
-		{"default:leaves", "default:leaves", "default:leaves"}
+		{"default:apple"},
+		{"default:chest"}
 	}
 })
 
@@ -18,17 +17,10 @@ minetest.register_craft({
 })
 
 minetest.register_craft({
-	output = "extrablocks:flour 8",
-	recipe = {
-		{"extrablocks:wheat"},
-	}
-})
-
-minetest.register_craft({
 	output = "extrablocks:muffin_uncooked 7",
 	recipe = {
 		{"extrablocks:sugar", "extrablocks:sugar", "extrablocks:sugar"},
-		{"extrablocks:flour", "extrablocks:flour", "extrablocks:flour"},
+		{"farming:flour", "farming:flour", "farming:flour"},
 		{"default:paper", "bucket:bucket_water", "default:paper"},
 	},
 	replacements = {{"bucket:bucket_water", "bucket:bucket_empty"}},
@@ -38,7 +30,7 @@ minetest.register_craft({
 	output = "extrablocks:torte 2",
 	recipe = {
 		{"extrablocks:muffin", "extrablocks:sugar", "extrablocks:muffin"},
-		{"extrablocks:flour", "extrablocks:flour", "extrablocks:flour"},
+		{"farming:flour", "farming:flour", "farming:flour"},
 		{"bucket:bucket_water", "extrablocks:muffin", "bucket:bucket_water"},
 	},
 	replacements = {{"bucket:bucket_water", "bucket:bucket_empty"}, {"bucket:bucket_water", "bucket:bucket_empty"}},

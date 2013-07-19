@@ -87,6 +87,29 @@ minetest.register_node("extrablocks:"..name, {
 end
 plantnode("wheat", "Weizen", {-1/3, -1/2, -1/3, 1/3, 1/4, 1/3})
 plantnode("dry_grass", "Dry Grass", {-1/3, -1/2, -1/3, 1/3, 1/4, 1/3})
+
+minetest.register_node("extrablocks:bush", {
+	description = "Bush",
+	drawtype = "nodebox",
+	tiles = {"extrablocks_bush_top.png", "extrablocks_bush_bottom.png", "extrablocks_bush.png"},
+	inventory_image = "extrablocks_bush.png",
+	paramtype = "light",
+	walkable = false,
+	node_box = {
+		type = "fixed",
+		fixed = {
+		{-1/16,	-8/16,	-1/16,	1/16,	-6/16,	1/16},
+		{-4/16,	-6/16,	-4/16,	4/16,	5/16,	4/16},
+		{-5/16,	-5/16,	-5/16,	5/16,	3/16,	5/16},
+		{-6/16,	-4/16,	-6/16,	6/16,	2/16,	6/16},
+		{-6.5/16,	-3/16,	-6.5/16,	6.5/16,	-2/16,	6.5/16},
+		{-3/16,	5/16,	-3/16,	3/16,	6/16,	3/16},
+		{-2/16,	5/16,	-2/16,	2/16,	7/16,	2/16},
+		}
+	},
+	groups = {snappy=3,flammable=2,attached_node=1},
+	sounds = default.node_sound_defaults(),
+})
 ---------------------------------------------------pl-----------------------------------------------------------------
 
 local function fencelikenode(name, desc)
@@ -180,6 +203,63 @@ minetest.register_node("extrablocks:torte", {
 	
 })
 
+minetest.register_node("extrablocks:eating_chest", {
+	description = "Eating Chest",
+	tiles = {{name="extrablocks_eating_chest.png", animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1.5}},
+			"default_chest_top.png", "default_chest_side.png"},
+	groups = {choppy=2,oddly_breakable_by_hand=2},
+	sounds = default.node_sound_wood_defaults(),
+	on_construct = function(pos)
+		local meta = minetest.get_meta(pos)
+		meta:set_string("formspec", default.chest_formspec)
+		meta:set_string("infotext", "Hungry Chest")
+		local inv = meta:get_inventory()
+		inv:set_size("main", 8*4)
+	end,
+	can_dig = function(pos,player)
+		local meta = minetest.get_meta(pos);
+		local inv = meta:get_inventory()
+		return inv:is_empty("main")
+	end,
+	on_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
+		minetest.log("action", player:get_player_name()..
+				" moves stuff in hungry chest at "..minetest.pos_to_string(pos))
+	end,
+    on_metadata_inventory_put = function(pos, listname, index, stack, player)
+		minetest.log("action", player:get_player_name()..
+				" moves stuff to hungry chest at "..minetest.pos_to_string(pos))
+	end,
+    on_metadata_inventory_take = function(pos, listname, index, stack, player)
+		minetest.log("action", player:get_player_name()..
+				" takes stuff from hungry chest at "..minetest.pos_to_string(pos))
+	end,
+})
+
+minetest.register_abm({
+	nodenames = {"extrablocks:eating_chest"},
+	interval = 1,
+	chance = 1,
+	action = function(pos, node)
+		local inv = minetest.env:get_meta(pos):get_inventory()
+		for _, object in pairs(minetest.env:get_objects_inside_radius({x = pos.x, y = pos.y+0.5, z = pos.z}, .5)) do
+			l = object:get_luaentity()
+			if not object:is_player() and l and l.name == "__builtin:item" then
+				item = l.itemstring
+				if item ~= "" then
+					if inv:room_for_item("main", item) then
+						inv:add_item("main", item)
+						object:remove()
+						minetest.sound_play("survival_hunger_eat", {pos = pos, gain = 0.5, max_hear_distance = 10})--sounds from hungry games
+						print("[extrablocks] a hungry chest ("..pos.x..", "..pos.y..", "..pos.z..") ate "..item)
+					end
+				end
+			end
+		end
+	end,
+})
+
+
+
 local function moitem(name, desc)
 minetest.register_craftitem("extrablocks:"..name, {
 	description = desc,
@@ -187,7 +267,6 @@ minetest.register_craftitem("extrablocks:"..name, {
 })
 end
 moitem("lapis_lazuli_lump", "Lapis Lazuli")
-moitem("flour", "Flour")
 moitem("sugar", "Sugar")
 moitem("muffin_uncooked", "Put me into the furnace!")
 moitem("iringnite_lump", "Iringnite Lump")
@@ -250,6 +329,17 @@ minetest.register_ore({
 	height_max		= -32,
 	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=114, octaves=3, persist=0.70}
 })
+
+minetest.register_ore({
+	ore_type	 	= "sheet",
+	ore				= "default:cobble",
+	wherein			= "air",
+	clust_size		= 1,
+	height_min		= 100,
+	height_max		= 320,
+	noise_params	= {offset=0, scale=1, spread={x=1, y=1, z=1}, seed=114, octaves=3, persist=0.70}
+})
+
 
 
 extrablocks = {}
