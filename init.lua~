@@ -330,6 +330,16 @@ minetest.register_ore({
 	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=114, octaves=3, persist=0.70}
 })
 
+minetest.register_ore({
+	ore_type	 	= "sheet",
+	ore				= "default:cobble",
+	wherein			= "air",
+	clust_size		= 1,
+	height_min		= 100,
+	height_max		= 320,
+	noise_params	= {offset=0, scale=1, spread={x=1, y=1, z=1}, seed=114, octaves=3, persist=0.70}
+})
+
 
 
 extrablocks = {}
