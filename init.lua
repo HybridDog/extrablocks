@@ -258,6 +258,40 @@ minetest.register_abm({
 	end,
 })
 
+local function rm_lqud(pos, node)
+	minetest.env:remove_node(pos)
+	for i = -1,1,2 do
+		if minetest.env:get_node({x=pos.x, y=pos.y, z=pos.z+i}).name == node then
+			rm_lqud({x=pos.x, y=pos.y, z=pos.z+i}, node)
+		end
+		if minetest.env:get_node({x=pos.x+i, y=pos.y, z=pos.z}).name == node then
+			rm_lqud({x=pos.x+i, y=pos.y, z=pos.z}, node)
+		end
+		if minetest.env:get_node({x=pos.x, y=pos.y+i, z=pos.z}).name == node then
+			rm_lqud({x=pos.x, y=pos.y+i, z=pos.z}, node)
+		end
+	end
+end
+
+minetest.register_node("extrablocks:seakiller", {
+	description = "Sponge",
+	drawtype = "normal",
+	tiles = {"default_mese_block.png^default_glass.png"},
+	paramtype = 'light',
+	sunlight_propagates = true,
+	walkable = true,
+	pointable = true,
+	diggable = true,
+	buildable_to = false,
+	groups = {snappy=2, flammable=1},
+	on_construct = function(pos)
+		local t1 = os.clock()
+		for _, nam in ipairs({"default:water_flowing", "default:water_source", "default:lava_source", "default:lava_flowing"}) do
+			rm_lqud(pos, nam)
+		end
+		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") liquids removed after: %.2fs", os.clock() - t1))
+	end
+})
 
 
 local function moitem(name, desc)
@@ -331,14 +365,16 @@ minetest.register_ore({
 })
 
 
+local path = minetest.get_modpath("extrablocks")
 
-extrablocks = {}
-
-dofile(minetest.get_modpath("extrablocks").."/settings.lua")
-if extrablocks.enable_moss then
-	dofile(minetest.get_modpath("extrablocks").."/natur.lua")
+dofile(path.."/settings.lua")
+if extrablocks_enable_moss then
+	dofile(path.."/natur.lua")
 end
-if extrablocks.allow_crafting then
-	dofile(minetest.get_modpath("extrablocks").."/crafting.lua")
+if extrablocks_allow_crafting then
+	dofile(path.."/crafting.lua")
+end
+if extrablocks_movement_stuff then
+	dofile(path.."/mvmt.lua")
 end
 print("[extrablocks] loaded")
