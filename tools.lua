@@ -72,7 +72,7 @@ minetest.register_on_dignode(function(pos, oldnode, digger)
 		local time = math.random(10)/10
 		minetest.after(time, function(pos)
 			minetest.set_node(pos, {name="tnt:tnt_burning"})
-			boom(pos, 0)
+			boom(pos, 0, digger)
 		end, pos)
 	end
 end)
