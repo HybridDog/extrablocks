@@ -2,7 +2,7 @@
 local function orenode(name, desc)
 minetest.register_node("extrablocks:"..name.."_ore", {
 	description = desc,
-	tile_images = {"default_stone.png^extrablocks_"..name.."_ore.png"},
+	tiles = {"default_stone.png^extrablocks_"..name.."_ore.png"},
 	groups = {cracky=3},
 	drop = "extrablocks:"..name.."_lump",
 	sounds = default.node_sound_stone_defaults(),
@@ -12,7 +12,7 @@ end
 local function monode(name, desc, ligh)
 minetest.register_node("extrablocks:"..name, {
 	description = desc,
-	tile_images = {"extrablocks_"..name..".png"},
+	tiles = {"extrablocks_"..name..".png"},
 	light_source = ligh,
 	groups = {cracky=3},
 	sounds = default.node_sound_stone_defaults(),
@@ -53,7 +53,7 @@ monode("acid", "Acid", 15)
 
 minetest.register_node("extrablocks:goldstone", {
 	description = "Gold in Stone",
-	tile_images = {"default_stone.png^extrablocks_goldstone.png"},
+	tiles = {"default_stone.png^extrablocks_goldstone.png"},
 	light_source = 15,
 	groups = {cracky=3},
 	sounds = default.node_sound_stone_defaults(),
@@ -138,7 +138,7 @@ local img = "extrablocks_"..name..".png"
 minetest.register_node("extrablocks:"..name, {
 	description = desc,
 	drawtype = "raillike",
-	tile_images = {img},
+	tiles = {img},
 	inventory_image = img,
 	selection_box = {type = "fixed",fixed = {-0.5, -1/2, -0.5, 0.5, -0.45, 0.5},},
 	paramtype = "light",
@@ -150,7 +150,7 @@ raillikenode("repellent", "Repellent Covering")
 raillikenode("radi", "!!!")
 
 minetest.register_node("extrablocks:tort", {
-	tile_images = {"extrablocks_to_t.png", "extrablocks_to_b.png", "extrablocks_to_s2.png"},
+	tiles = {"extrablocks_to_t.png", "extrablocks_to_b.png", "extrablocks_to_s2.png"},
 	groups = {crumbly=2},
 	drop = "extrablocks:torte 2",
 	sounds = default.node_sound_dirt_defaults
@@ -376,5 +376,8 @@ if extrablocks_allow_crafting then
 end
 if extrablocks_movement_stuff then
 	dofile(path.."/mvmt.lua")
+end
+if extrablocks_tools then
+	dofile(path.."/tools.lua")
 end
 print("[extrablocks] loaded")
