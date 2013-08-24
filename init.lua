@@ -275,14 +275,9 @@ end
 
 minetest.register_node("extrablocks:seakiller", {
 	description = "Sponge",
-	drawtype = "normal",
 	tiles = {"default_mese_block.png^default_glass.png"},
-	paramtype = 'light',
 	sunlight_propagates = true,
-	walkable = true,
-	pointable = true,
-	diggable = true,
-	buildable_to = false,
+	drop = "",
 	groups = {snappy=2, flammable=1},
 	on_construct = function(pos)
 		local t1 = os.clock()
