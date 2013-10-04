@@ -375,4 +375,5 @@ end
 if extrablocks_tools then
 	dofile(path.."/tools.lua")
 end
+dofile(path.."/laser_mk2.lua")
 print("[extrablocks] loaded")
