@@ -1,3 +1,5 @@
+--license LGPLv2+, for the changes: WTFPL
+
 local range = 10
 
 local function round_pos(pos)
