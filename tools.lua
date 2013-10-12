@@ -21,6 +21,9 @@ minetest.register_tool("extrablocks:hammer", {
 })
 
 minetest.register_on_dignode(function(pos, oldnode, digger)
+	if digger == nil then
+		return
+	end
 	if digger:get_wielded_item():get_name() == "extrablocks:hammer"
 	and oldnode.name ~= "air" then
 		local nd = oldnode.name
@@ -66,6 +69,9 @@ minetest.register_tool("extrablocks:pick_tnt", {
 })
 
 minetest.register_on_dignode(function(pos, oldnode, digger)
+	if digger == nil then
+		return
+	end
 	if digger:get_wielded_item():get_name() == "extrablocks:pick_tnt"
 	and oldnode.name ~= "air"
 	and minetest.get_item_group(oldnode.name, "cracky") >= 1 then
