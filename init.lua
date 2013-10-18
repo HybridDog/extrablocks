@@ -353,10 +353,10 @@ minetest.register_ore({
 	ore_type	 	= "sheet",
 	ore				= "extrablocks:fokni_gneb_ore",
 	wherein			= "default:stone",
-	clust_size		= 20,
+	clust_size		= 10,
 	height_min		= -100,
 	height_max		= -32,
-	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=114, octaves=3, persist=0.70}
+	noise_params	= {offset=0, scale=1, spread={x=20, y=20, z=20}, seed=114, octaves=3, persist=0.70}
 })
 
 
