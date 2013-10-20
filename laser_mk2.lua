@@ -1,6 +1,6 @@
 --license LGPLv2+, for the changes: WTFPL
 
-local range = 10 --range of the laser shot
+local laser_mk2_range = 10 --range of the laser shot
 local r_corr = 0.25 --remove a bit more nodes (if shooting diagonal) to let it look like a hole (sth like antialiasing)
 --local laser_mk2_max_charge = 40000
 --technic.register_power_tool("technic:laser_mk2", laser_mk2_max_charge)
@@ -41,7 +41,7 @@ local function node_tab(z, d)
 	return {n1, n2}
 end
 
-local function lazer_nodes(pos, dir, player)
+local function lazer_nodes(pos, dir, player, range)
 	local t_dir = get_used_dir(dir)
 	local dir_typ = t_dir[1]
 	if t_dir[3] == "+" then
@@ -88,7 +88,7 @@ local function lazer_nodes(pos, dir, player)
 	end
 end
 
-local function laser_shoot(player)
+local function laser_shoot(player, range, particle_texture, sound)
 	local t1 = os.clock()
 
 	local playerpos=player:getpos()
@@ -96,9 +96,9 @@ local function laser_shoot(player)
 
 	local startpos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
 	local a = {x=dir.x*50, y=dir.y*50, z=dir.z*50}
-	minetest.add_particle(startpos, dir, a, 1, 1, false, "extrablocks_laser_beam_mk2.png")
-	lazer_nodes(vector.round(startpos), dir, player)
-	minetest.sound_play("extrablocks_laser_mk2", {pos = playerpos, gain = 1.0, max_hear_distance = range})
+	minetest.add_particle(startpos, dir, a, 1, 1, false, particle_texture)
+	lazer_nodes(vector.round(startpos), dir, player, range)
+	minetest.sound_play(sound, {pos = playerpos, gain = 1.0, max_hear_distance = range})
 
 	print("[extrablocks] <laser_mk2> my shot was calculated after "..tostring(os.clock()-t1).."s")
 	return true --?
@@ -115,7 +115,7 @@ minetest.register_tool("extrablocks:laser_mk2", {
 			return
 		end
 		if meta.charge - 400 > 0 then]]
-			laser_shoot(user)
+			laser_shoot(user, laser_mk2_range, "extrablocks_laser_beam_mk2.png", "extrablocks_laser_mk2")
 			--[[meta.charge = meta.charge - 400
 			technic.set_RE_wear(itemstack, meta.charge, laser_mk2_max_charge)
 			itemstack:set_metadata(set_item_meta(meta))
@@ -135,6 +135,9 @@ function lazer_it(pos, player)
 	if node.name == "default:water_source"
 	or node.name == "default:water_flowing" then
 		minetest.remove_node(pos)
+		if math.random(300) == 1 then
+			minetest.add_particle(pos, {x=0, y=0, z=0}, {x=0, y=0, z=0}, 0.5, 8, false, "smoke_puff.png")
+		end
 		return
 	end
 	if player then
