@@ -2,6 +2,8 @@
 
 local range = 10 --range of the laser shot
 local r_corr = 0.25 --remove a bit more nodes (if shooting diagonal) to let it look like a hole (sth like antialiasing)
+--local laser_mk2_max_charge = 40000
+--technic.register_power_tool("technic:laser_mk2", laser_mk2_max_charge)
 
 local f_1 = 0.5-r_corr
 local f_2 = 0.5+r_corr
@@ -86,7 +88,7 @@ local function lazer_nodes(pos, dir, player)
 	end
 end
 
-local function laser_shoot(itemstack, player)
+local function laser_shoot(player)
 	local t1 = os.clock()
 
 	local playerpos=player:getpos()
@@ -108,8 +110,17 @@ minetest.register_tool("extrablocks:laser_mk2", {
 	inventory_image = "extrablocks_mining_laser_mk2.png",
 	stack_max = 1,
 	on_use = function(itemstack, user)
-		item=itemstack:to_table()
-		laser_shoot(item, user, pointed_thing)
+		--[[local meta = get_item_meta(itemstack:get_metadata())
+		if not meta or not meta.charge then
+			return
+		end
+		if meta.charge - 400 > 0 then]]
+			laser_shoot(user)
+			--[[meta.charge = meta.charge - 400
+			technic.set_RE_wear(itemstack, meta.charge, laser_mk2_max_charge)
+			itemstack:set_metadata(set_item_meta(meta))
+		end
+		return itemstack]]
 	end,
 })
 
