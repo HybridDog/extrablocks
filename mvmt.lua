@@ -35,15 +35,14 @@ minetest.register_craftitem("extrablocks:rocket_bag", {
 	inventory_image = "extrablocks_rbp.png",
 	metadata = "off",
     on_use = function(itemstack, user)
-		local p = user
 		local item = itemstack:to_table();
 		if item["metadata"]=="off" then
-			local accel = acc(p)
-			p:set_physics_override(nil,nil,accel)
+			local accel = acc(user)
+			user:set_physics_override(nil,nil,accel)
 			item["metadata"] = "on"
 			lit_rocket(pos)
 		else
-			p:set_physics_override(nil,nil,1)
+			user:set_physics_override(nil,nil,1)
 			item["metadata"] = "off"
 			off_rocket(pos)
 		end
