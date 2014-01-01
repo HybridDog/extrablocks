@@ -1,3 +1,4 @@
+local load_time_start = os.clock()
 --Node------------------------------------------------------------------------------------
 local function orenode(name, desc)
 minetest.register_node("extrablocks:"..name.."_ore", {
@@ -376,4 +377,4 @@ if extrablocks_tools then
 	dofile(path.."/tools.lua")
 end
 dofile(path.."/mining_lasers.lua")
-print("[extrablocks] loaded")
+print(string.format("[extrablocks] loaded after ca. %.2fs", os.clock() - load_time_start))

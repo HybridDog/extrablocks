@@ -13,6 +13,16 @@ local mining_lasers_list = {
 local f_1 = 0.5-r_corr
 local f_2 = 0.5+r_corr
 
+-- Taken from the Flowers mod by erlehmann.
+local function table_contains(t, v)
+	for _,i in ipairs(t) do
+		if i == v then
+			return true
+		end
+	end
+	return false
+end
+
 local function get_used_dir(dir)
 	local abs_dir = {x=math.abs(dir.x), y=math.abs(dir.y), z=math.abs(dir.z)}
 	local dir_max = math.max(abs_dir.x, abs_dir.y, abs_dir.z)
@@ -48,14 +58,10 @@ end
 
 local function laser_node(pos, player)	
 	local node = minetest.get_node(pos)
-	if node.name == "air"
-	or node.name == "ignore"
-	or node.name == "default:lava_source"
-	or node.name == "default:lava_flowing" then
+	if table_contains({"air", "ignore", "default:lava_source", "default:lava_flowing"}, node.name) then
 		return
 	end
-	if node.name == "default:water_source"
-	or node.name == "default:water_flowing" then
+	if table_contains({"default:water_source", "default:water_flowing"}, node.name) then
 		minetest.remove_node(pos)
 		if math.random(300) == 1 then
 			minetest.add_particle(pos, {x=0, y=0, z=0}, {x=0, y=0, z=0}, 0.5, 8, false, "smoke_puff.png")
@@ -122,7 +128,8 @@ local function laser_shoot(player, range, particle_texture, sound)
 
 	local startpos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
 	local a = {x=dir.x*50, y=dir.y*50, z=dir.z*50}
-	minetest.add_particle(startpos, dir, a, range/11, 1, false, particle_texture)
+	local delay = (math.sqrt(1+100*(range+0.4))-1)/50
+	minetest.add_particle(startpos, dir, a, delay, 1, false, particle_texture)
 	laser_nodes(vector.round(startpos), dir, player, range)
 	minetest.sound_play(sound, {pos = playerpos, gain = 1.0, max_hear_distance = range})
 
@@ -132,23 +139,12 @@ end
 
 
 for _,m in ipairs(mining_lasers_list) do
---	technic.register_power_tool("technic:laser_mk"..m[1], m[3])
 	minetest.register_tool("extrablocks:laser_mk"..m[1], {
 		description = "Mining Laser MK"..m[1],
 		inventory_image = "technic_mining_laser_mk"..m[1]..".png",
 		stack_max = 1,
 		on_use = function(itemstack, user)
-			--[[local meta = get_item_meta(itemstack:get_metadata())
-			if not meta or not meta.charge then
-				return
-			end
-			if meta.charge - 400 > 0 then]]
-				laser_shoot(user, m[2], "technic_laser_beam_mk"..m[1]..".png", "technic_laser_mk"..m[1])
-				--[[meta.charge = meta.charge - 400
-				technic.set_RE_wear(itemstack, meta.charge, m[3])
-				itemstack:set_metadata(set_item_meta(meta))
-			end
-			return itemstack]]
+			laser_shoot(user, m[2], "technic_laser_beam_mk"..m[1]..".png", "technic_laser_mk"..m[1])
 		end,
 	})
 end
