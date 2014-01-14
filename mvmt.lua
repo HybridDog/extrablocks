@@ -25,28 +25,28 @@ end
 
 local function acc(p)
 	if p:get_player_control()["sneak"] then
-		return 0.1
+		return 3
 	end
-	return -1
+	return 30
 end
+
+local jpllist = {}
 
 minetest.register_craftitem("extrablocks:rocket_bag", {
 	description = "Experimental Rocket Bag",
 	inventory_image = "extrablocks_rbp.png",
-	metadata = "off",
-    on_use = function(itemstack, user)
-		local item = itemstack:to_table();
-		if item["metadata"]=="off" then
-			local accel = acc(user)
-			user:set_physics_override(nil,nil,accel)
-			item["metadata"] = "on"
-			lit_rocket(pos)
-		else
-			user:set_physics_override(nil,nil,1)
-			item["metadata"] = "off"
+	on_use = function(_, user)
+		local enabled = jpllist[user:get_player_name()]
+		if enabled then
+			user:set_physics_override({jump=1})
+			jpllist[user:get_player_name()] = false
 			off_rocket(pos)
+		else
+			local accel = acc(user)
+			user:set_physics_override({jump=accel})
+			jpllist[user:get_player_name()] = true
+			lit_rocket(pos)
 		end
-		itemstack:replace(item)
-		return itemstack
+		return
 	end,
 })

@@ -1,17 +1,17 @@
 --license LGPLv2+
 
-local r_corr = 0.25 --remove a bit more nodes (if shooting diagonal) to let it look like a hole (sth like antialiasing)
+--local r_corr = 0.25 --remove a bit more nodes (if shooting diagonal) to let it look like a hole (sth like antialiasing)
 local mk1_charge = 40000
 
 local mining_lasers_list = {
---	{<num>, <range of the laser shots>, <max_charge>},
-	{"1", 7, mk1_charge},
-	{"2", 11, mk1_charge*4},
-	{"3", 30, mk1_charge*16},
+--	{<num>, <range of the laser shots>, <max_charge>, (math.sqrt(1+100*(range+0.4))-1)/50},
+	{"1", 7, mk1_charge, 0.52},
+	{"2", 11, mk1_charge*4, 0.66},
+	{"3", 30, mk1_charge*16, 1.08},
 }
 
-local f_1 = 0.5-r_corr
-local f_2 = 0.5+r_corr
+--local f_1 = 0.5-r_corr
+--local f_2 = 0.5+r_corr
 
 -- Taken from the Flowers mod by erlehmann.
 local function table_contains(t, v)
@@ -23,7 +23,7 @@ local function table_contains(t, v)
 	return false
 end
 
-local function get_used_dir(dir)
+--[[local function get_used_dir(dir)
 	local abs_dir = {x=math.abs(dir.x), y=math.abs(dir.y), z=math.abs(dir.z)}
 	local dir_max = math.max(abs_dir.x, abs_dir.y, abs_dir.z)
 	if dir_max == abs_dir.x then
@@ -54,7 +54,7 @@ local function node_tab(z, d)
 		return {n1}
 	end
 	return {n1, n2}
-end
+end]]
 
 local function laser_node(pos, player)	
 	local node = minetest.get_node(pos)
@@ -74,7 +74,10 @@ local function laser_node(pos, player)
 end
 
 local function laser_nodes(pos, dir, player, range)
-	local t_dir = get_used_dir(dir)
+	for _,p in ipairs(vector.line(pos, dir, range)) do
+		laser_node(p, player)
+	end
+--[[	local t_dir = get_used_dir(dir)
 	local dir_typ = t_dir[1]
 	if t_dir[3] == "+" then
 		f_tab = {0, range}
@@ -117,19 +120,18 @@ local function laser_nodes(pos, dir, player, range)
 				laser_node({x=pos.x+x, y=pos.y+y, z=pos.z+z}, player)
 			end
 		end
-	end
+	end]]
 end
 
-local function laser_shoot(player, range, particle_texture, sound)
+local function laser_shoot(player, range, particle_texture, particle_time, sound)
 	local t1 = os.clock()
 
 	local playerpos=player:getpos()
 	local dir=player:get_look_dir()
 
 	local startpos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
-	local a = {x=dir.x*50, y=dir.y*50, z=dir.z*50}
-	local delay = (math.sqrt(1+100*(range+0.4))-1)/50
-	minetest.add_particle(startpos, dir, a, delay, 1, false, particle_texture)
+	local a = vector.multiply(dir, 50)
+	minetest.add_particle(startpos, dir, a, particle_time, 1, false, particle_texture)
 	laser_nodes(vector.round(startpos), dir, player, range)
 	minetest.sound_play(sound, {pos = playerpos, gain = 1.0, max_hear_distance = range})
 
@@ -144,7 +146,7 @@ for _,m in ipairs(mining_lasers_list) do
 		inventory_image = "technic_mining_laser_mk"..m[1]..".png",
 		stack_max = 1,
 		on_use = function(itemstack, user)
-			laser_shoot(user, m[2], "technic_laser_beam_mk"..m[1]..".png", "technic_laser_mk"..m[1])
+			laser_shoot(user, m[2], "technic_laser_beam_mk"..m[1]..".png", m[4], "technic_laser_mk"..m[1])
 		end,
 	})
 end

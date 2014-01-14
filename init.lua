@@ -326,11 +326,11 @@ local function ore(name, scarcity, num_ores, size, min, max)
 end
 ore("lapis_lazuli_ore", 10*10*10, 3, 10, -150, -80)
 ore("lapis_lazuli_ore", 7*7*7, 3, 10, -300, -150)
-ore("goldstone", 11*11*11, 4, 11, -1000, -450)
-ore("goldstone", 8*8*8, 4, 11, -31000, -1000)
-ore("iringnite_ore", 40*40*40, 4, 11, -2000, -1000)
-ore("iringnite_ore", 20*20*20, 4, 11, -3000, -2000)
-ore("iringnite_ore", 11*11*11, 4, 11, -31000, -3000)
+ore("goldstone", 11*11*11, 4, 11, -2000, -1000)
+ore("goldstone", 8*8*8, 4, 11, -31000, -2000)
+ore("iringnite_ore", 40*40*40, 4, 11, -4000, -3000)
+ore("iringnite_ore", 20*20*20, 4, 11, -5000, -4000)
+ore("iringnite_ore", 11*11*11, 4, 11, -31000, -5000)
 minetest.register_ore({
 	ore_type	 	= "sheet",
 	ore				= "extrablocks:marble_ore",
@@ -355,8 +355,8 @@ minetest.register_ore({
 	ore				= "extrablocks:fokni_gneb_ore",
 	wherein			= "default:stone",
 	clust_size		= 10,
-	height_min		= -100,
-	height_max		= -32,
+	height_min		= -10000,
+	height_max		= -6000,
 	noise_params	= {offset=0, scale=1, spread={x=20, y=20, z=20}, seed=114, octaves=3, persist=0.70}
 })
 
@@ -376,5 +376,6 @@ end
 if extrablocks_tools then
 	dofile(path.."/tools.lua")
 end
+dofile(path.."/vector_line.lua")
 dofile(path.."/mining_lasers.lua")
 print(string.format("[extrablocks] loaded after ca. %.2fs", os.clock() - load_time_start))
