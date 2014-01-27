@@ -364,6 +364,7 @@ minetest.register_ore({
 local path = minetest.get_modpath("extrablocks")
 
 dofile(path.."/settings.lua")
+dofile(path.."/vector_line.lua")
 if extrablocks_enable_moss then
 	dofile(path.."/natur.lua")
 end
@@ -376,6 +377,6 @@ end
 if extrablocks_tools then
 	dofile(path.."/tools.lua")
 end
-dofile(path.."/vector_line.lua")
+dofile(path.."/weapons.lua")
 dofile(path.."/mining_lasers.lua")
 print(string.format("[extrablocks] loaded after ca. %.2fs", os.clock() - load_time_start))
