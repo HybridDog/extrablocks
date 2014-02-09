@@ -1,6 +1,7 @@
 --license LGPLv2+
 
 local mk1_charge = 40000
+local laser_prec = 7
 
 local mining_lasers_list = {
 --	{<num>, <range of the laser shots>, <max_charge>, (math.sqrt(1+100*(range+0.4))-1)/50},
@@ -42,11 +43,11 @@ local function laser_shoot(player, range, particle_texture, particle_time, sound
 	local playerpos=player:getpos()
 	local dir=player:get_look_dir()
 
-	local startpos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
+	local pos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
 	local a = vector.multiply(dir, 50)
-	local nodes = vector.line(vector.round(startpos), dir, range)
+	local nodes = vector.fine_line(pos, dir, range, laser_prec)
 
-	minetest.add_particle(startpos, dir, a, particle_time, 1, false, particle_texture)
+	minetest.add_particle(pos, dir, a, particle_time, 1, false, particle_texture)
 	for _,p in ipairs(nodes) do --minetest.after isn't necessary for a laser
 		laser_node(p, player)
 	end

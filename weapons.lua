@@ -1,4 +1,5 @@
 local gun_range = 100
+local gun_prec = 7
 local gun_a = 200
 local gun_v = 100
 local shot_delay = vector.straightdelay(gun_range, gun_v, gun_a)
@@ -21,18 +22,18 @@ local function shoot(player, range, particle_texture, particle_time, sound)
 	local playerpos=player:getpos()
 	local dir=player:get_look_dir()
 
-	local startpos = vector.round({x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z})
+	local pos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
 	local a = vector.multiply(dir, gun_a)
 	local v = vector.multiply(dir, gun_v)
-	local nodes = vector.line(startpos, dir, range)
+	local nodes = vector.fine_line(pos, dir, range, gun_prec)
 
-	minetest.add_particle(startpos, v, a, particle_time, 1, false, particle_texture)
+	minetest.add_particle(pos, v, a, particle_time, 1, false, particle_texture)
 	for i,p in ipairs(nodes) do
 		if minetest.get_node(p).name ~= "air" then
 			if minetest.get_node(p).name ~= "wool:blue"
 			and i > 1 then
 				posb = nodes[i-1]
-				paint(posb, startpos)
+				paint(posb, pos)
 			end
 			break
 		end
