@@ -364,7 +364,6 @@ minetest.register_ore({
 local path = minetest.get_modpath("extrablocks")
 
 dofile(path.."/settings.lua")
-dofile(path.."/vector_line.lua")
 if extrablocks_enable_moss then
 	dofile(path.."/natur.lua")
 end
