@@ -1,5 +1,5 @@
 local gun_range = 100
-local gun_prec = 7
+local gun_prec = 3
 local gun_a = 200
 local gun_v = 100
 local shot_delay = vector.straightdelay(gun_range, gun_v, gun_a)
