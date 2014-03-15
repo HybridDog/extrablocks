@@ -80,6 +80,7 @@ minetest.register_node("extrablocks:"..name, {
 	sounds = default.node_sound_leaves_defaults(),
 	drawtype = "plantlike",
 	paramtype = "light",
+	waving = 1,
 	walkable = false,
 	buildable_to = true,
 	selection_box = {type = "fixed",fixed = selbox},
