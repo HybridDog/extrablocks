@@ -24,8 +24,11 @@ local function off_rocket(pos)
 end
 
 local function acc(p)
-	if p:get_player_control()["sneak"] then
-		return 3
+	local pcontrol = p:get_player_control()
+	if pcontrol then --"and" wouldn't work, I think
+		if pcontrol["sneak"] then
+			return 3
+		end
 	end
 	return 30
 end
@@ -36,17 +39,24 @@ minetest.register_craftitem("extrablocks:rocket_bag", {
 	description = "Experimental Rocket Bag",
 	inventory_image = "extrablocks_rbp.png",
 	on_use = function(_, user)
-		local enabled = jpllist[user:get_player_name()]
+		if not user then
+			return
+		end
+		local username = user:get_player_name()
+		if not username then
+			return
+		end
+		local enabled = jpllist[username]
 		if enabled then
 			user:set_physics_override({jump=1})
-			jpllist[user:get_player_name()] = false
+			jpllist[username] = false
 			off_rocket(pos)
 		else
 			local accel = acc(user)
 			user:set_physics_override({jump=accel})
-			jpllist[user:get_player_name()] = true
+			jpllist[username] = true
 			lit_rocket(pos)
 		end
-		return
+		return --necessary because of on_use
 	end,
 })
