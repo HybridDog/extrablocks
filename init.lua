@@ -182,20 +182,20 @@ minetest.register_node("extrablocks:torte", {
 		local slabnode = nil
 		local p0 = pointed_thing.under
 		local p1 = pointed_thing.above
-		local n0 = minetest.env:get_node(p0)
+		local n0 = minetest.get_node(p0)
 		if n0.name == "extrablocks:torte" and p0.y+1 == p1.y then
 			slabpos = p0
 			slabnode = n0
 		end
 		if slabpos then
-			minetest.env:remove_node(slabpos)
+			minetest.remove_node(slabpos)
 			local fakestack = ItemStack("extrablocks:tort")
 			pointed_thing.above = slabpos
 			fakestack = minetest.item_place(fakestack, placer, pointed_thing)
 			if not fakestack or fakestack:is_empty() then
 				itemstack:take_item(1)
 			else
-				minetest.env:set_node(slabpos, slabnode)
+				minetest.set_node(slabpos, slabnode)
 			end
 			return itemstack
 		end
@@ -242,8 +242,8 @@ minetest.register_abm({
 	interval = 1,
 	chance = 1,
 	action = function(pos, node)
-		local inv = minetest.env:get_meta(pos):get_inventory()
-		for _, object in pairs(minetest.env:get_objects_inside_radius({x = pos.x, y = pos.y+0.5, z = pos.z}, .5)) do
+		local inv = minetest.get_meta(pos):get_inventory()
+		for _, object in pairs(minetest.get_objects_inside_radius({x = pos.x, y = pos.y+0.5, z = pos.z}, .5)) do
 			l = object:get_luaentity()
 			if not object:is_player() and l and l.name == "__builtin:item" then
 				item = l.itemstring
@@ -260,17 +260,22 @@ minetest.register_abm({
 	end,
 })
 
+local lq_rm_count --try to avoid stack overflow
 local function rm_lqud(pos, node)
-	minetest.env:remove_node(pos)
+	minetest.remove_node(pos)
+	if lq_rm_count > 100 then
+		return
+	end
+	lq_rm_count = lq_rm_count+1
 	for i = -1,1,2 do
-		if minetest.env:get_node({x=pos.x, y=pos.y, z=pos.z+i}).name == node then
-			rm_lqud({x=pos.x, y=pos.y, z=pos.z+i}, node)
-		end
-		if minetest.env:get_node({x=pos.x+i, y=pos.y, z=pos.z}).name == node then
-			rm_lqud({x=pos.x+i, y=pos.y, z=pos.z}, node)
-		end
-		if minetest.env:get_node({x=pos.x, y=pos.y+i, z=pos.z}).name == node then
-			rm_lqud({x=pos.x, y=pos.y+i, z=pos.z}, node)
+		for _,p in ipairs({
+			{x=pos.x, y=pos.y, z=pos.z+i},
+			{x=pos.x+i, y=pos.y, z=pos.z},
+			{x=pos.x, y=pos.y+i, z=pos.z}
+		}) do
+			if minetest.get_node(p).name == node then
+				rm_lqud(p, node)
+			end
 		end
 	end
 end
@@ -283,6 +288,7 @@ minetest.register_node("extrablocks:seakiller", {
 	groups = {snappy=2, flammable=1},
 	on_construct = function(pos)
 		local t1 = os.clock()
+		lq_rm_count = 0
 		for _, nam in ipairs({"default:water_flowing", "default:water_source", "default:lava_source", "default:lava_flowing"}) do
 			rm_lqud(pos, nam)
 		end
