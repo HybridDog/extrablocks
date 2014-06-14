@@ -39,8 +39,16 @@ local STONELIKENODES = {
 	{"fokni_gnebbrick", "Fokni Gneb Brick"},
 }
 
-for i in ipairs(STONELIKENODES) do
-	monode(STONELIKENODES[i][1], STONELIKENODES[i][2], 0)
+for _,i in ipairs(STONELIKENODES) do
+	local name, desc = unpack(i)
+	monode(name, desc, 0)
+	stairs.register_stair_and_slab(name, "extrablocks:"..name,
+		{cracky=3},
+		{"extrablocks_"..name..".png"},
+		desc.." Stair",
+		desc.." Slab",
+		default.node_sound_stone_defaults()
+	)
 end
 
 orenode("lapis_lazuli", "Lapis Lazuli Ore")
