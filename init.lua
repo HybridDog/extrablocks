@@ -77,6 +77,37 @@ minetest.register_node("extrablocks:iringnite_block", {
 	}),
 })
 
+minetest.register_node("extrablocks:invisible_path", {
+	description = "APAT",
+	tiles = {"extrablocks_inv_path.png"},
+	groups = {cracky=1,level=2},
+	use_texture_alpha = true,
+})
+
+minetest.register_abm({
+	nodenames = {"extrablocks:invisible_path"},
+	neighbors = {},
+	interval = 50,
+	chance = 1,
+	action = function(pos)
+		for i = -1,1,2 do
+			for _,p in pairs({
+				{x=pos.x, y=pos.y, z=pos.z+i},
+				{x=pos.x, y=pos.y+i, z=pos.z},
+				{x=pos.x+i, y=pos.y, z=pos.z},
+			}) do
+				local n = minetest.get_node(p).name
+				if n ~= "air"
+				and n ~= "extrablocks:invisible_path" then
+					minetest.remove_node(pos)
+					return
+				end
+			end
+		end
+	end,
+})
+
+
 
 ----------------------------------------plants----------------------------------------------------------------------------
 local function plantnode(name, desc, selbox)
@@ -291,7 +322,6 @@ end
 minetest.register_node("extrablocks:seakiller", {
 	description = "Sponge",
 	tiles = {"default_mese_block.png^default_glass.png"},
-	sunlight_propagates = true,
 	drop = "",
 	groups = {snappy=2, flammable=1},
 	on_construct = function(pos)
