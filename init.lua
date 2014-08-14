@@ -299,15 +299,12 @@ minetest.register_abm({
 	end,
 })
 
-local function get_tab(pos)
-	local taba = {pos}
-	local tabb = {}
+local function get_tab(pos, func)
+	local tab = {pos}
 	local tab_avoid = {[pos.x.." "..pos.y.." "..pos.z] = true}
 	local tab_done,num = {pos},2
-	while taba[1]
-	or tabb[1] do
-		tabb = {}
-		for _,p in pairs(taba) do
+	while tab[1] do
+		for n,p in pairs(tab) do
 			for i = -1,1,2 do
 				for _,p2 in pairs({
 					{x=p.x+i, y=p.y, z=p.z},
@@ -316,33 +313,15 @@ local function get_tab(pos)
 				}) do
 					local pstr = p2.x.." "..p2.y.." "..p2.z
 					if not tab_avoid[pstr]
-					and minetest.get_node(p2).name == "default:water_source" then
+					and func(p2) then
 						tab_avoid[pstr] = true
 						tab_done[num] = p2
 						num = num+1
-						table.insert(tabb, p2)
+						table.insert(tab, p2)
 					end
 				end
 			end
-		end
-		taba = {}
-		for _,p in pairs(tabb) do
-			for i = -1,1,2 do
-				for _,p2 in pairs({
-					{x=p.x+i, y=p.y, z=p.z},
-					{x=p.x, y=p.y+i, z=p.z},
-					{x=p.x, y=p.y, z=p.z+i},
-				}) do
-					local pstr = p2.x.." "..p2.y.." "..p2.z
-					if not tab_avoid[pstr]
-					and minetest.get_node(p2).name == "default:water_source" then
-						tab_avoid[pstr] = true
-						tab_done[num] = p2
-						num = num+1
-						table.insert(taba, p2)
-					end
-				end
-			end
+			tab[n] = nil
 		end
 	end
 	return tab_done
@@ -368,6 +347,16 @@ local function rm_lqud(pos, node)
 	end
 end]]
 
+local function is_liquid(pos)
+	local nd = minetest.get_node(pos).name
+	for _,i in pairs({"default:water_flowing", "default:water_source", "default:lava_source", "default:lava_flowing"}) do
+		if nd == i then
+			return true
+		end
+	end
+	return false
+end
+
 minetest.register_node("extrablocks:seakiller", {
 	description = "Sponge",
 	tiles = {"default_mese_block.png^default_glass.png"},
@@ -375,11 +364,11 @@ minetest.register_node("extrablocks:seakiller", {
 	groups = {snappy=2, flammable=1},
 	on_construct = function(pos)
 		local t1 = os.clock()
-		for _,p in pairs(get_tab(pos)) do
+		for _,p in pairs(get_tab(pos, is_liquid)) do
 			minetest.remove_node(p)
 		end
 		--[[lq_rm_count = 0
-		for _, nam in ipairs({"default:water_flowing", "default:water_source", "default:lava_source", "default:lava_flowing"}) do
+		for _, nam in ipairs() do
 			rm_lqud(pos, nam)
 		end]]
 		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") liquids removed after: %.2fs", os.clock() - t1))
