@@ -398,6 +398,22 @@ minetest.register_craftitem("extrablocks:muffin", {
 
 
 
+
+if moss then
+	moss.register_moss({
+		node = "default:stonebrick",
+		result = "extrablocks:mossystonebrick"
+	})
+
+	moss.register_moss({
+		node = "extrablocks:wall",
+		result = "extrablocks:mossywall"
+	})
+end
+
+
+
+
 local function ore(name, scarcity, num_ores, size, min, max)
 	minetest.register_ore({
 		ore_type	 	= "scatter",
@@ -450,9 +466,6 @@ minetest.register_ore({
 local path = minetest.get_modpath("extrablocks")
 
 dofile(path.."/settings.lua")
-if extrablocks_enable_moss then
-	dofile(path.."/natur.lua")
-end
 if extrablocks_allow_crafting then
 	dofile(path.."/crafting.lua")
 end
