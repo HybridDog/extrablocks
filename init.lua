@@ -42,7 +42,7 @@ local STONELIKENODES = {
 for _,i in ipairs(STONELIKENODES) do
 	local name, desc = unpack(i)
 	monode(name, desc, 0)
-	stairs.register_stair_and_slab(name, "extrablocks:"..name,
+	stairs.register_stair_and_slab("extrablocks_"..name, "extrablocks:"..name,
 		{cracky=3},
 		{"extrablocks_"..name..".png"},
 		desc.." Stair",
