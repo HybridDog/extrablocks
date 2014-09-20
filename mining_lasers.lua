@@ -43,12 +43,18 @@ local function laser_shoot(player, range, particle_texture, particle_time, sound
 	local playerpos=player:getpos()
 	local dir=player:get_look_dir()
 
-	local pos = {x=playerpos.x, y=playerpos.y+1.6, z=playerpos.z}
+	local pos = {x=playerpos.x, y=playerpos.y+1.625, z=playerpos.z}
+	local rpos = vector.round(pos)
 	local a = vector.multiply(dir, 50)
-	local nodes = vector.fine_line(pos, dir, range, laser_prec)
+	local nodes = vector.line(pos, dir, range)
+	local pa = vector.round(vector.multiply(dir, range))
+	--local nodes = vector.threeline(pa.x, pa.y, pa.z)
 
 	minetest.add_particle(pos, dir, a, particle_time, 1, false, particle_texture)
 	for _,p in ipairs(nodes) do --minetest.after isn't necessary for a laser
+		--for n,i in pairs({"x", "y", "z"}) do
+		--	p[i] = rpos[i]+p[n]
+		--end
 		laser_node(p, player)
 	end
 	minetest.sound_play(sound, {pos = playerpos, gain = 1.0, max_hear_distance = range})
