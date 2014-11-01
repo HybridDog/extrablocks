@@ -1,2 +1,2 @@
 TODO:
-— add craft stuff for the mining lasers (maybe a diamond [array?] and mirrors)
+— find the license information
