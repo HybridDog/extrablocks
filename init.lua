@@ -433,24 +433,26 @@ ore("goldstone", 8*8*8, 4, 11, -31000, -2000)
 ore("iringnite_ore", 40*40*40, 4, 11, -4000, -3000)
 ore("iringnite_ore", 20*20*20, 4, 11, -5000, -4000)
 ore("iringnite_ore", 11*11*11, 4, 11, -31000, -5000)
-minetest.register_ore({
-	ore_type	 	= "sheet",
-	ore				= "extrablocks:marble_ore",
-	wherein			= "default:stone",
-	clust_size		= 20,
-	height_min		= -100,
-	height_max		= -32,
-	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=113, octaves=3, persist=0.70}
-})
-minetest.register_ore({
-	ore_type	 	= "sheet",
-	ore				= "extrablocks:marble_ore",
-	wherein			= "default:stone",
-	clust_size		= 20,
-	height_min		= -100,
-	height_max		= -90,
-	noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=112, octaves=3, persist=0.70}
-})
+if not minetest.get_modpath("extrablocks") then
+	minetest.register_ore({
+		ore_type	 	= "sheet",
+		ore				= "extrablocks:marble_ore",
+		wherein			= "default:stone",
+		clust_size		= 20,
+		height_min		= -100,
+		height_max		= -32,
+		noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=113, octaves=3, persist=0.70}
+	})
+	minetest.register_ore({
+		ore_type	 	= "sheet",
+		ore				= "extrablocks:marble_ore",
+		wherein			= "default:stone",
+		clust_size		= 20,
+		height_min		= -100,
+		height_max		= -90,
+		noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=112, octaves=3, persist=0.70}
+	})
+end
 
 minetest.register_ore({
 	ore_type	 	= "sheet",
