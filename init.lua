@@ -375,6 +375,66 @@ minetest.register_node("extrablocks:seakiller", {
 	end
 })
 
+local function get_tab2d(pos, func, max)
+	local count
+	local tab = {pos}
+	local tab_avoid = {[pos.x.." "..pos.y.." "..pos.z] = true}
+	local tab_done,num = {pos},2
+	while tab[1] do
+		for n,p in pairs(tab) do
+			for i = -1,1,2 do
+				for _,p2 in pairs({
+					{x=p.x+i, y=p.y, z=p.z},
+					{x=p.x, y=p.y, z=p.z+i},
+				}) do
+					local pstr = p2.x.." "..p2.y.." "..p2.z
+					if not tab_avoid[pstr]
+					and func(p2) then
+						tab_avoid[pstr] = true
+						tab_done[num] = p2
+						num = num+1
+						table.insert(tab, p2)
+						if max
+						and num > max then
+							return false
+						end
+					end
+				end
+			end
+			tab[n] = nil
+		end
+	end
+	return tab_done
+end
+
+local function is_air(pos)
+	return minetest.get_node(pos).name == "air" or false
+end
+
+minetest.register_node("extrablocks:house_tidy_up", {
+	description = "AUFRÄUMEN",
+	tiles = {"default_wood.png^default_glass.png"},
+	groups = {snappy=2},
+	on_construct = function(pos)
+		local t1 = os.clock()
+		pos.y = pos.y+1
+		local data = get_tab2d(pos, is_air, 3000)
+		if data then
+			for _,p in pairs(data) do
+				p.y = p.y-1
+				if minetest.get_node(p).name ~= "air" then
+					minetest.remove_node(p)
+				end
+			end
+		end
+		--[[lq_rm_count = 0
+		for _, nam in ipairs() do
+			rm_lqud(pos, nam)
+		end]]
+		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") nodees removed after: %.2fs", os.clock() - t1))
+	end
+})
+
 
 local function moitem(name, desc)
 minetest.register_craftitem("extrablocks:"..name, {
@@ -395,9 +455,33 @@ minetest.register_craftitem("extrablocks:muffin", {
 	on_use = minetest.item_eat(20),
 })
 
+local nt = {
+	"default_water_source_animated.png^[verticalframe:8:1"..
+		"^(default_nc_rb.png^[transformR90)"..
+		"^[transformR270"..
+		"^[transformFX"..
+		"^[combine:16x16:16,0=default_nc_rb.png^[transformR90",
+	"default_water_source_animated.png^[verticalframe:8:1"..
+		"^default_nc_rb.png"..
+		"^[transformFX"..
+		"^[combine:16x16:0,16=default_nc_rb.png",
+}
 
+for i = 1,2 do
+	nt[i] = {
+		name = nt[i],
+		animation = {
+			type = "vertical_frames",
+			aspect_w = 16,
+			aspect_h = 16,
+			length = 0.6,	-- 300ms (from nyan.cat)
+		},
+	}
+end
 
-
+minetest.override_item("default:nyancat_rainbow", {
+	tiles = {nt[1], nt[1], nt[2]},
+})
 
 if moss then
 	moss.register_moss({
