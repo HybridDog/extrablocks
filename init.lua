@@ -299,7 +299,7 @@ minetest.register_abm({
 	end,
 })
 
-local function get_tab(pos, func)
+local function get_tab(pos, func, max)
 	local tab = {pos}
 	local tab_avoid = {[pos.x.." "..pos.y.." "..pos.z] = true}
 	local tab_done,num = {pos},2
@@ -318,13 +318,17 @@ local function get_tab(pos, func)
 						tab_done[num] = p2
 						num = num+1
 						table.insert(tab, p2)
+						if max
+						and num > max then
+							return false
+						end
 					end
 				end
 			end
 			tab[n] = nil
 		end
 	end
-	return tab_done
+	return tab_done, tab_avoid
 end
 
 --[[local lq_rm_count --try to avoid stack overflow
@@ -372,6 +376,120 @@ minetest.register_node("extrablocks:seakiller", {
 			rm_lqud(pos, nam)
 		end]]
 		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") liquids removed after: %.2fs", os.clock() - t1))
+	end
+})
+
+local floor = "default:stone"
+local corner = "default:tree"
+local wall = "default:wood"
+local current_sn
+local function is_sn(pos)
+	return minetest.get_node(pos).name == current_sn
+end
+
+local function is_solid(p, anti)
+	if anti[p.x.." "..p.y.." "..p.z] then
+		return true
+	end
+	if minetest.get_node(p).name ~= "air" then
+		return true
+	end
+	return false
+end
+
+local function floor_pattern()
+	return floor
+end
+
+local function wall_pattern()
+	return wall
+end
+
+local function is_floor(pos, anti)
+	for i = -1,1,2 do
+		local y = pos.y+i
+		if not (
+			is_solid({x=pos.x+1, y=y, z=pos.z}, anti)
+			and is_solid({x=pos.x-1, y=y, z=pos.z}, anti)
+		)
+		and not (
+			is_solid({x=pos.x, y=y, z=pos.z+1}, anti)
+			and is_solid({x=pos.x, y=y, z=pos.z-1}, anti)
+		)
+		and not is_solid({x=pos.x, y=y, z=pos.z}, anti) then
+			return true
+		end
+	end
+	return false
+end
+
+local function is_corner(pos, anti)
+	local y = pos.y
+	if (
+		is_solid({x=pos.x+1, y=y, z=pos.z}, anti)
+		and is_solid({x=pos.x-1, y=y, z=pos.z}, anti)
+	)
+	or (
+		is_solid({x=pos.x, y=y, z=pos.z+1}, anti)
+		and is_solid({x=pos.x, y=y, z=pos.z-1}, anti)
+	) then
+		return false
+	end
+	return true
+end
+
+local function is_wall(pos, anti)
+	for i = -1,1,2 do
+		for _,p in pairs({
+			{x=pos.x, y=pos.y, z=pos.z+i},
+			{x=pos.x+i, y=pos.y, z=pos.z},
+		}) do
+			if not is_solid(p, anti) then
+				return true
+			end
+		end
+	end
+	return false
+end
+
+minetest.register_node("extrablocks:house_redesignor", {
+	description = "Asnh",
+	tiles = {"default_mese_block.png^default_jungleleaves.png"},
+	drop = "",
+	groups = {snappy=2, flammable=1},
+	on_place = function(_, puncher, pos)
+		local t1 = os.clock()
+		if not pos
+		or not puncher then
+			return
+		end
+		pos = pos.under
+		current_sn = minetest.get_node(pos).name
+		local ctrl = puncher:get_player_control()
+		if not ctrl then
+			return
+		end
+		if ctrl.sneak then
+			if ctrl.aux1 then
+				wall = current_sn
+			else
+				floor = current_sn
+			end
+			return
+		end
+		local data,anti = get_tab(pos, is_sn, 3000)
+		if data then
+			for _,p in pairs(data) do
+				if is_floor(p, anti) then
+					minetest.set_node(p, {name=floor_pattern()})
+				elseif is_corner(p, anti) then
+					minetest.set_node(p, {name=corner})
+				elseif is_wall(p, anti) then
+					minetest.set_node(p, {name=wall_pattern()})
+				end
+			end
+		end
+		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") blah blahr: %.2fs", os.clock() - t1))
 	end
 })
 
@@ -432,6 +550,33 @@ minetest.register_node("extrablocks:house_tidy_up", {
 			rm_lqud(pos, nam)
 		end]]
 		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") nodees removed after: %.2fs", os.clock() - t1))
+	end
+})
+
+local lnd = "default:cobble"
+minetest.register_node("extrablocks:house_floorfill", {
+	description = "bodenen",
+	tiles = {"default_junglewood.png^default_glass.png"},
+	groups = {snappy=2},
+	on_place = function(_, puncher, pos)
+		local t1 = os.clock()
+		if not pos
+		or not puncher then
+			return
+		end
+		local ctrl = puncher:get_player_control()
+		if ctrl.sneak then
+			lnd = minetest.get_node(pos.under).name
+			return
+		end
+		local pos = pos.above
+		local data = get_tab2d(pos, is_air, 3000)
+		if data then
+			for _,p in pairs(data) do
+				minetest.set_node(p, {name=lnd})
+			end
+		end
+		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") hole filled after: %.2fs", os.clock() - t1))
 	end
 })
 
@@ -563,4 +708,4 @@ if extrablocks_tools then
 end
 dofile(path.."/weapons.lua")
 dofile(path.."/mining_lasers.lua")
-print(string.format("[extrablocks] loaded after ca. %.2fs", os.clock() - load_time_start))
+minetest.log("info", string.format("[extrablocks] loaded after ca. %.2fs", os.clock() - load_time_start))
