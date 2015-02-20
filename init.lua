@@ -33,13 +33,21 @@ local STONELIKENODES = {
 	{"dried_dirt", "Dried Dirt"},
 	{"wall", "Wall"},
 	{"mossywall", "Mossy Wall"},
-	{"mossystonebrick", "Mossy Stone Brick"},
 	{"stonebrick", "Alternative Stone Brick"},
 	{"fokni_gneb", "Fokni Gneb"},
 	{"fokni_gnebbrick", "Fokni Gneb Brick"},
 }
 
-for _,i in ipairs(STONELIKENODES) do
+local moss_mod = rawget(_G, "moss") and true
+if moss_mod then
+	minetest.register_alias("extrablocks:mossystonebrick", "default:mossystonebrick")
+	minetest.register_alias("stairs:stair_extrablocks_mossystonebrick", "stairs:stair_mossystonebrick")
+	minetest.register_alias("stairs:slab_extrablocks_mossystonebrick", "stairs:slab_mossystonebrick")
+else
+	table.insert(STONELIKENODES, {"mossystonebrick", "Mossy Stone Brick"})
+end
+
+for _,i in pairs(STONELIKENODES) do
 	local name, desc = unpack(i)
 	monode(name, desc, 0)
 	stairs.register_stair_and_slab("extrablocks_"..name, "extrablocks:"..name,
@@ -628,12 +636,7 @@ minetest.override_item("default:nyancat_rainbow", {
 	tiles = {nt[1], nt[1], nt[2]},
 })
 
-if moss then
-	moss.register_moss({
-		node = "default:stonebrick",
-		result = "extrablocks:mossystonebrick"
-	})
-
+if moss_mod then
 	moss.register_moss({
 		node = "extrablocks:wall",
 		result = "extrablocks:mossywall"
