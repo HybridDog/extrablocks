@@ -21,10 +21,10 @@ minetest.register_node("extrablocks:"..name, {
 end
 
 local STONELIKENODES = {
-	{"marble_ore", "Marble Ore"},
+	{"marble_ore", "marble ore"},
 	{"marble_tiling", "Tiling"},
-	{"marble_clean", "Marble"},
-	{"lapis_lazuli_block", "Lapis Lazuli Block"},
+	{"marble_clean", "marble"},
+	{"lapis_lazuli_block", "lapis lazuli Block"},
 	{"previous_cobble", "Previous Cobblestone"},
 	{"space", "Space"},
 	{"special", "Special"},
@@ -59,9 +59,9 @@ for _,i in pairs(STONELIKENODES) do
 	)
 end
 
-orenode("lapis_lazuli", "Lapis Lazuli Ore")
-orenode("iringnite", "Iringnite Ore")
-orenode("fokni_gneb", "Fokni Gneb Ore")
+orenode("lapis_lazuli", "lapis lazuli ore")
+orenode("iringnite", "Iringnite ore")
+orenode("fokni_gneb", "Fokni Gneb ore")
 
 monode("goldbrick", "Goldbrick", 15)
 monode("goldblock", "Goldblock", 15)
@@ -299,7 +299,7 @@ minetest.register_abm({
 						inv:add_item("main", item)
 						object:remove()
 						minetest.sound_play("survival_hunger_eat", {pos = pos, gain = 0.5, max_hear_distance = 10})--sounds from hungry games
-						print("[extrablocks] a hungry chest ("..pos.x..", "..pos.y..", "..pos.z..") ate "..item)
+						print("[extrablocks] a hungry chest "..minetest.pos_to_string(pos).." ate "..item)
 					end
 				end
 			end
@@ -307,33 +307,37 @@ minetest.register_abm({
 	end,
 })
 
-local function get_tab(pos, func, max)
+local default_tabs = {
+	{x=0, y=0, z=-1},
+	{x=0, y=0, z=1},
+	{x=0, y=-1, z=0},
+	{x=0, y=1, z=0},
+	{x=-1, y=0, z=0},
+	{x=1, y=0, z=0},
+}
+local function get_tab(pos, func, max, tabs)
+	tabs = tabs or default_tabs
 	local tab = {pos}
 	local tab_avoid = {[pos.x.." "..pos.y.." "..pos.z] = true}
 	local tab_done,num = {pos},2
 	while tab[1] do
 		for n,p in pairs(tab) do
-			for i = -1,1,2 do
-				for _,p2 in pairs({
-					{x=p.x+i, y=p.y, z=p.z},
-					{x=p.x, y=p.y+i, z=p.z},
-					{x=p.x, y=p.y, z=p.z+i},
-				}) do
-					local pstr = p2.x.." "..p2.y.." "..p2.z
-					if not tab_avoid[pstr]
-					and func(p2) then
-						tab_avoid[pstr] = true
-						tab_done[num] = p2
-						num = num+1
-						table.insert(tab, p2)
-						if max
-						and num > max then
-							return false
-						end
+			for _,p2 in pairs(tabs) do
+				p2 = vector.add(p, p2)
+				local pstr = p2.x.." "..p2.y.." "..p2.z
+				if not tab_avoid[pstr]
+				and func(p2) then
+					tab_avoid[pstr] = true
+					tab_done[num] = p2
+					num = num+1
+					table.insert(tab, p2)
+					if max
+					and num > max then
+						return false
 					end
 				end
 			end
-			tab[n] = nil
+		tab[n] = nil
 		end
 	end
 	return tab_done, tab_avoid
@@ -383,13 +387,17 @@ minetest.register_node("extrablocks:seakiller", {
 		for _, nam in ipairs() do
 			rm_lqud(pos, nam)
 		end]]
-		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") liquids removed after: %.2fs", os.clock() - t1))
+		print(string.format("[extrablocks] "..minetest.pos_to_string(pos).." liquids removed after: %.2fs", os.clock() - t1))
 	end
 })
 
-local floor = "default:stone"
-local corner = "default:tree"
-local wall = "default:wood"
+local nds = {
+	roof = "default:stone",
+	floor = "default:obsidian",
+	corner = "default:tree",
+	wall = "default:wood",
+	glass = "default:glass",
+}
 local current_sn
 local function is_sn(pos)
 	return minetest.get_node(pos).name == current_sn
@@ -405,13 +413,41 @@ local function is_solid(p, anti)
 	return false
 end
 
-local function floor_pattern()
-	return floor
+
+-- patterns for floor etc
+
+local pattern = {}
+function pattern.roof()
+	return nds.roof
+end
+function pattern.floor()
+	return nds.floor
+end
+function pattern.wall()
+	return nds.wall
+end
+function pattern.glass()
+	return nds.glass
+end
+function pattern.corner()
+	return nds.corner
 end
 
-local function wall_pattern()
-	return wall
+
+-- tests if free space is about it
+
+local function is_roof(pos, anti)
+	for y = 1,10 do
+		local y = pos.y+y
+		if is_solid({x=pos.x, y=y, z=pos.z}, anti) then
+			return false
+		end
+	end
+	return true
 end
+
+
+-- searches for near nodes
 
 local function is_floor(pos, anti)
 	for i = -1,1,2 do
@@ -431,6 +467,9 @@ local function is_floor(pos, anti)
 	return false
 end
 
+
+-- corners for deco
+
 local function is_corner(pos, anti)
 	local y = pos.y
 	if (
@@ -446,6 +485,9 @@ local function is_corner(pos, anti)
 	return true
 end
 
+
+-- wall is vertical
+
 local function is_wall(pos, anti)
 	for i = -1,1,2 do
 		for _,p in pairs({
@@ -459,6 +501,46 @@ local function is_wall(pos, anti)
 	end
 	return false
 end
+
+
+-- glass touching the wall
+
+local is_air
+local function get_glass(pos, anti)
+	if not is_solid({x=pos.x, y=pos.y, z=pos.z-1}, anti)
+	and not is_solid({x=pos.x, y=pos.y, z=pos.z+1}, anti) then
+		local p = {x=pos.x, y=pos.y, z=pos.z-1}
+		local g_tab = {
+			{x=0, y=-1, z=0},
+			{x=0, y=1, z=0},
+			{x=-1, y=0, z=0},
+			{x=1, y=0, z=0},
+		}
+		local free_space,ndx = get_tab(p, is_air, 3000, g_tab)
+		if not free_space then
+			return
+		end
+		local glasss = {}
+		for _,p in pairs(free_space) do
+			local block
+			for _,a in pairs(g_tab) do
+				local pstr = p.x+a.x .." "..p.y+a.y .." "..p.z+a.z
+				if ndx[pstr] then
+					block = true
+					break
+				end
+			end
+			if not block then
+				p.z = p.z+1
+				glasss[p.x.." "..p.y.." "..p.z] = p
+			end
+		end
+		return next(glasss) and glasss
+	end
+end
+
+
+-- the node
 
 minetest.register_node("extrablocks:house_redesignor", {
 	description = "Asnh",
@@ -479,25 +561,51 @@ minetest.register_node("extrablocks:house_redesignor", {
 		end
 		if ctrl.sneak then
 			if ctrl.aux1 then
-				wall = current_sn
+				nds.wall = current_sn
 			else
-				floor = current_sn
+				nds.floor = current_sn
 			end
 			return
 		end
 		local data,anti = get_tab(pos, is_sn, 3000)
 		if data then
+			local status = {}
 			for _,p in pairs(data) do
+				local no
+				local pstr = p.x.." "..p.y.." "..p.z
 				if is_floor(p, anti) then
-					minetest.set_node(p, {name=floor_pattern()})
+					if is_roof(p, anti) then
+						p.typ = "roof"
+					else
+						p.typ = "floor"
+					end
 				elseif is_corner(p, anti) then
-					minetest.set_node(p, {name=corner})
+					p.typ = "corner"
 				elseif is_wall(p, anti) then
-					minetest.set_node(p, {name=wall_pattern()})
+					p.typ = "wall"
+				else
+					no = true
+				end
+				if not no then
+					status[pstr] = p
 				end
 			end
+			for _,p in pairs(status) do
+				if p.typ == "wall" then
+					local glass = get_glass(pos, anti)
+					if glass then
+						for i,gl in pairs(glass) do
+							gl.typ = "glass"
+							status[i] = gl
+						end
+					end
+				end
+			end
+			for _,p in pairs(status) do
+				minetest.set_node(p, {name=pattern[p.typ]()})
+			end
 		end
-		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") blah blahr: %.2fs", os.clock() - t1))
+		print(string.format("[extrablocks] "..minetest.pos_to_string(pos).." blah blahr: %.2fs", os.clock() - t1))
 	end
 })
 
@@ -533,7 +641,7 @@ local function get_tab2d(pos, func, max)
 	return tab_done
 end
 
-local function is_air(pos)
+function is_air(pos)
 	return minetest.get_node(pos).name == "air" or false
 end
 
@@ -557,7 +665,7 @@ minetest.register_node("extrablocks:house_tidy_up", {
 		for _, nam in ipairs() do
 			rm_lqud(pos, nam)
 		end]]
-		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") nodees removed after: %.2fs", os.clock() - t1))
+		print(string.format("[extrablocks] "..minetest.pos_to_string(pos).." nodees removed after: %.2fs", os.clock() - t1))
 	end
 })
 
@@ -584,7 +692,7 @@ minetest.register_node("extrablocks:house_floorfill", {
 				minetest.set_node(p, {name=lnd})
 			end
 		end
-		print(string.format("[extrablocks] ("..pos.x..", "..pos.y..", "..pos.z..") hole filled after: %.2fs", os.clock() - t1))
+		print(string.format("[extrablocks] "..minetest.pos_to_string(pos).." hole filled after: %.2fs", os.clock() - t1))
 	end
 })
 
@@ -595,12 +703,12 @@ minetest.register_craftitem("extrablocks:"..name, {
 	inventory_image = "extrablocks_"..name..".png",
 })
 end
-moitem("lapis_lazuli_lump", "Lapis Lazuli")
+moitem("lapis_lazuli_lump", "lapis lazuli")
 moitem("sugar", "Sugar")
 moitem("muffin_uncooked", "Put me into the furnace!")
-moitem("iringnite_lump", "Iringnite Lump")
+moitem("iringnite_lump", "Iringnite lump")
 moitem("iringnite_ingot", "Iringnite Ingot")
-moitem("fokni_gneb_lump", "Fokni Gneb Lump")
+moitem("fokni_gneb_lump", "Fokni Gneb lump")
 
 minetest.register_craftitem("extrablocks:muffin", {
 	description = "Muffin",
