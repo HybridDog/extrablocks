@@ -524,10 +524,11 @@ local function get_glass(pos, status)
 					{[coord]=0, [acoord]=1, y=0},
 				}
 				local free_space,ndx = get_tab(p, unsolid, 300, g_tab)
-				g_tab[5] = {[coord]=0, [acoord]=-1, y=-1}
-				g_tab[6] = {[coord]=0, [acoord]=1, y=-1}
-				g_tab[7] = {[coord]=0, [acoord]=-1, y=1}
-				g_tab[8] = {[coord]=0, [acoord]=1, y=1}
+				for i = -1,1,2 do
+					for j = -1,1,2 do
+						table.insert(g_tab, {[coord]=0, [acoord]=i, y=j})
+					end
+				end
 				if free_space then
 					local glasss,found = {}
 					for _,p in pairs(free_space) do
