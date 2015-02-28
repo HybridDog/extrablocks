@@ -403,7 +403,8 @@ local function is_sn(pos)
 	return minetest.get_node(pos).name == current_sn
 end
 
-local function is_solid(p, anti)
+local anti
+local function is_solid(p)
 	if anti[p.x.." "..p.y.." "..p.z] then
 		return true
 	end
@@ -436,10 +437,10 @@ end
 
 -- tests if free space is about it
 
-local function is_roof(pos, anti)
+local function is_roof(pos)
 	for y = 1,10 do
 		local y = pos.y+y
-		if is_solid({x=pos.x, y=y, z=pos.z}, anti) then
+		if is_solid({x=pos.x, y=y, z=pos.z}) then
 			return false
 		end
 	end
@@ -449,18 +450,18 @@ end
 
 -- searches for near nodes
 
-local function is_floor(pos, anti)
+local function is_floor(pos)
 	for i = -1,1,2 do
 		local y = pos.y+i
 		if not (
-			is_solid({x=pos.x+1, y=y, z=pos.z}, anti)
-			and is_solid({x=pos.x-1, y=y, z=pos.z}, anti)
+			is_solid({x=pos.x+1, y=y, z=pos.z})
+			and is_solid({x=pos.x-1, y=y, z=pos.z})
 		)
 		and not (
-			is_solid({x=pos.x, y=y, z=pos.z+1}, anti)
-			and is_solid({x=pos.x, y=y, z=pos.z-1}, anti)
+			is_solid({x=pos.x, y=y, z=pos.z+1})
+			and is_solid({x=pos.x, y=y, z=pos.z-1})
 		)
-		and not is_solid({x=pos.x, y=y, z=pos.z}, anti) then
+		and not is_solid({x=pos.x, y=y, z=pos.z}) then
 			return true
 		end
 	end
@@ -470,15 +471,15 @@ end
 
 -- corners for deco
 
-local function is_corner(pos, anti)
+local function is_corner(pos)
 	local y = pos.y
 	if (
-		is_solid({x=pos.x+1, y=y, z=pos.z}, anti)
-		and is_solid({x=pos.x-1, y=y, z=pos.z}, anti)
+		is_solid({x=pos.x+1, y=y, z=pos.z})
+		and is_solid({x=pos.x-1, y=y, z=pos.z})
 	)
 	or (
-		is_solid({x=pos.x, y=y, z=pos.z+1}, anti)
-		and is_solid({x=pos.x, y=y, z=pos.z-1}, anti)
+		is_solid({x=pos.x, y=y, z=pos.z+1})
+		and is_solid({x=pos.x, y=y, z=pos.z-1})
 	) then
 		return false
 	end
@@ -488,13 +489,13 @@ end
 
 -- wall is vertical
 
-local function is_wall(pos, anti)
+local function is_wall(pos)
 	for i = -1,1,2 do
 		for _,p in pairs({
 			{x=pos.x, y=pos.y, z=pos.z+i},
 			{x=pos.x+i, y=pos.y, z=pos.z},
 		}) do
-			if not is_solid(p, anti) then
+			if not is_solid(p) then
 				return true
 			end
 		end
@@ -506,9 +507,9 @@ end
 -- glass touching the wall
 
 local is_air
-local function get_glass(pos, anti)
-	if not is_solid({x=pos.x, y=pos.y, z=pos.z-1}, anti)
-	and not is_solid({x=pos.x, y=pos.y, z=pos.z+1}, anti) then
+local function get_glass(pos)
+	if not is_solid({x=pos.x, y=pos.y, z=pos.z-1})
+	and not is_solid({x=pos.x, y=pos.y, z=pos.z+1}) then
 		local p = {x=pos.x, y=pos.y, z=pos.z-1}
 		local g_tab = {
 			{x=0, y=-1, z=0},
@@ -516,7 +517,7 @@ local function get_glass(pos, anti)
 			{x=-1, y=0, z=0},
 			{x=1, y=0, z=0},
 		}
-		local free_space,ndx = get_tab(p, is_air, 3000, g_tab)
+		local free_space,ndx = get_tab(p, is_solid, 3000, g_tab)
 		if not free_space then
 			return
 		end
@@ -525,7 +526,7 @@ local function get_glass(pos, anti)
 			local block
 			for _,a in pairs(g_tab) do
 				local pstr = p.x+a.x .." "..p.y+a.y .." "..p.z+a.z
-				if ndx[pstr] then
+				if not ndx[pstr] then
 					block = true
 					break
 				end
@@ -567,21 +568,22 @@ minetest.register_node("extrablocks:house_redesignor", {
 			end
 			return
 		end
-		local data,anti = get_tab(pos, is_sn, 3000)
+		local data
+		data,anti = get_tab(pos, is_sn, 3000)
 		if data then
 			local status = {}
 			for _,p in pairs(data) do
 				local no
 				local pstr = p.x.." "..p.y.." "..p.z
-				if is_floor(p, anti) then
-					if is_roof(p, anti) then
+				if is_floor(p) then
+					if is_roof(p) then
 						p.typ = "roof"
 					else
 						p.typ = "floor"
 					end
-				elseif is_corner(p, anti) then
+				elseif is_corner(p) then
 					p.typ = "corner"
-				elseif is_wall(p, anti) then
+				elseif is_wall(p) then
 					p.typ = "wall"
 				else
 					no = true
@@ -592,7 +594,7 @@ minetest.register_node("extrablocks:house_redesignor", {
 			end
 			for _,p in pairs(status) do
 				if p.typ == "wall" then
-					local glass = get_glass(pos, anti)
+					local glass = get_glass(pos)
 					if glass then
 						for i,gl in pairs(glass) do
 							gl.typ = "glass"
