@@ -323,7 +323,7 @@ local function get_tab(pos, func, max, tabs)
 	while tab[1] do
 		for n,p in pairs(tab) do
 			for _,p2 in pairs(tabs) do
-				p2 = vector.add(p, p2)
+				local p2 = vector.add(p, p2)
 				local pstr = p2.x.." "..p2.y.." "..p2.z
 				if not tab_avoid[pstr]
 				and func(p2) then
@@ -337,7 +337,7 @@ local function get_tab(pos, func, max, tabs)
 					end
 				end
 			end
-		tab[n] = nil
+			tab[n] = nil
 		end
 	end
 	return tab_done, tab_avoid
@@ -408,7 +408,7 @@ local function is_solid(p)
 	if anti[p.x.." "..p.y.." "..p.z] then
 		return true
 	end
-	if minetest.get_node(p).name ~= "air" then
+	if minetest.registered_nodes[minetest.get_node(p).name].walkable then
 		return true
 	end
 	return false
@@ -473,15 +473,17 @@ end
 
 local function is_corner(pos)
 	local y = pos.y
-	if (
-		is_solid({x=pos.x+1, y=y, z=pos.z})
-		and is_solid({x=pos.x-1, y=y, z=pos.z})
-	)
-	or (
-		is_solid({x=pos.x, y=y, z=pos.z+1})
-		and is_solid({x=pos.x, y=y, z=pos.z-1})
-	) then
-		return false
+	for i = 1,2 do
+		if (
+			is_solid({x=pos.x+i, y=y, z=pos.z})
+			and is_solid({x=pos.x-i, y=y, z=pos.z})
+		)
+		or (
+			is_solid({x=pos.x, y=y, z=pos.z+i})
+			and is_solid({x=pos.x, y=y, z=pos.z-i})
+		) then
+			return false
+		end
 	end
 	return true
 end
@@ -506,37 +508,56 @@ end
 
 -- glass touching the wall
 
-local is_air
-local function get_glass(pos)
-	if not is_solid({x=pos.x, y=pos.y, z=pos.z-1})
-	and not is_solid({x=pos.x, y=pos.y, z=pos.z+1}) then
-		local p = {x=pos.x, y=pos.y, z=pos.z-1}
-		local g_tab = {
-			{x=0, y=-1, z=0},
-			{x=0, y=1, z=0},
-			{x=-1, y=0, z=0},
-			{x=1, y=0, z=0},
-		}
-		local free_space,ndx = get_tab(p, is_solid, 3000, g_tab)
-		if not free_space then
-			return
-		end
-		local glasss = {}
-		for _,p in pairs(free_space) do
-			local block
-			for _,a in pairs(g_tab) do
-				local pstr = p.x+a.x .." "..p.y+a.y .." "..p.z+a.z
-				if not ndx[pstr] then
-					block = true
-					break
+local function unsolid(p)
+	return not is_solid(p)
+end
+local function get_glass(pos, status)
+	for coord,acoord in pairs({x="z", z="x"}) do
+		if not is_solid({[coord]=pos[coord]-1, [acoord]=pos[acoord], y=pos.y})
+		and not is_solid({[coord]=pos[coord]+1, [acoord]=pos[acoord], y=pos.y}) then
+			for j = -1,1,2 do
+				local p = {[coord]=pos[coord]-j, [acoord]=pos[acoord], y=pos.y}
+				local g_tab = {
+					{x=0, y=-1, z=0},
+					{x=0, y=1, z=0},
+					{[coord]=0, [acoord]=-1, y=0},
+					{[coord]=0, [acoord]=1, y=0},
+				}
+				local free_space,ndx = get_tab(p, unsolid, 300, g_tab)
+				g_tab[5] = {[coord]=0, [acoord]=-1, y=-1}
+				g_tab[6] = {[coord]=0, [acoord]=1, y=-1}
+				g_tab[7] = {[coord]=0, [acoord]=-1, y=1}
+				g_tab[8] = {[coord]=0, [acoord]=1, y=1}
+				if free_space then
+					local glasss,found = {}
+					for _,p in pairs(free_space) do
+						local block
+						for _,a in pairs(g_tab) do
+							if not ndx[p.x+a.x .." "..p.y+a.y .." "..p.z+a.z] then
+								block = true
+								break
+							end
+							p[coord] = p[coord]+j
+							local pstr = p.x+a.x .." "..p.y+a.y .." "..p.z+a.z
+							p[coord] = p[coord]-j
+							if not status[pstr]	-- avoids removing doors
+							or status[pstr].typ ~= "wall" then
+								block = true
+								break
+							end
+						end
+						if not block then
+							p[coord] = p[coord]+j
+							glasss[p.x.." "..p.y.." "..p.z] = vector.new(p)
+							found = true
+						end
+					end
+					if found then
+						return glasss
+					end
 				end
 			end
-			if not block then
-				p.z = p.z+1
-				glasss[p.x.." "..p.y.." "..p.z] = p
-			end
 		end
-		return next(glasss) and glasss
 	end
 end
 
@@ -576,7 +597,7 @@ minetest.register_node("extrablocks:house_redesignor", {
 				local no
 				local pstr = p.x.." "..p.y.." "..p.z
 				if is_floor(p) then
-					if is_roof(p) then
+					if is_roof(p) then	-- the roof is the place where a lot air is above
 						p.typ = "roof"
 					else
 						p.typ = "floor"
@@ -594,7 +615,7 @@ minetest.register_node("extrablocks:house_redesignor", {
 			end
 			for _,p in pairs(status) do
 				if p.typ == "wall" then
-					local glass = get_glass(pos)
+					local glass = get_glass(p, status)	-- a table of positions for glass
 					if glass then
 						for i,gl in pairs(glass) do
 							gl.typ = "glass"
@@ -643,7 +664,7 @@ local function get_tab2d(pos, func, max)
 	return tab_done
 end
 
-function is_air(pos)
+local function is_air(pos)
 	return minetest.get_node(pos).name == "air" or false
 end
 
