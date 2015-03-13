@@ -72,6 +72,7 @@ minetest.register_node("extrablocks:goldstone", {
 	description = "Gold in Stone",
 	tiles = {"default_stone.png^extrablocks_goldstone.png"},
 	light_source = 15,
+	paramtype = "light",
 	groups = {cracky=3},
 	sounds = default.node_sound_stone_defaults(),
 })
