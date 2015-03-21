@@ -409,7 +409,8 @@ local function is_solid(p)
 	if anti[p.x.." "..p.y.." "..p.z] then
 		return true
 	end
-	if minetest.registered_nodes[minetest.get_node(p).name].walkable then
+	local data = minetest.registered_nodes[minetest.get_node(p).name] or {}
+	if data.walkable then
 		return true
 	end
 	return false
