@@ -20,7 +20,7 @@ local function table_contains(t, v)
 	return false
 end
 
-local function laser_node(pos, player)	
+local function laser_node(pos, player)
 	local node = minetest.get_node(pos)
 	if table_contains({"air", "ignore", "default:lava_source", "default:lava_flowing"}, node.name) then
 		return

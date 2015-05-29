@@ -250,7 +250,7 @@ minetest.register_node("extrablocks:torte", {
 
 		return minetest.item_place(itemstack, placer, pointed_thing)
 	end,
-	
+
 })
 
 minetest.register_node("extrablocks:eating_chest", {

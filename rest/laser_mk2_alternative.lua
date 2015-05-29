@@ -156,7 +156,7 @@ minetest.register_tool("extrablocks:laser_mk2", {
 	end,
 })
 
-function lazer_it (pos, player)	
+function lazer_it (pos, player)
 	local pos1={}
 --	pos1.x=math.floor(pos.x)
 --	pos1.y=math.floor(pos.y)
