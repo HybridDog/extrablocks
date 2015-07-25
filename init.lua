@@ -742,33 +742,7 @@ minetest.register_craftitem("extrablocks:muffin", {
 	on_use = minetest.item_eat(20),
 })
 
-local nt = {
-	"default_water_source_animated.png^[verticalframe:8:1"..
-		"^(default_nc_rb.png^[transformR90)"..
-		"^[transformR270"..
-		"^[transformFX"..
-		"^[combine:16x16:16,0=default_nc_rb.png^[transformR90",
-	"default_water_source_animated.png^[verticalframe:8:1"..
-		"^default_nc_rb.png"..
-		"^[transformFX"..
-		"^[combine:16x16:0,16=default_nc_rb.png",
-}
 
-for i = 1,2 do
-	nt[i] = {
-		name = nt[i],
-		animation = {
-			type = "vertical_frames",
-			aspect_w = 16,
-			aspect_h = 16,
-			length = 0.6,	-- 300ms (from nyan.cat)
-		},
-	}
-end
-
-minetest.override_item("default:nyancat_rainbow", {
-	tiles = {nt[1], nt[1], nt[2]},
-})
 
 if moss_mod then
 	moss.register_moss({
