@@ -253,6 +253,14 @@ minetest.register_node("extrablocks:torte", {
 
 })
 
+local chest_formspec =
+	"size[8,9]" ..
+	"list[current_name;main;0,0.3;8,4;]" ..
+	"list[current_player;main;0,4.85;8,1;]" ..
+	"list[current_player;main;0,6.08;8,3;8]" ..
+	"listring[current_name;main]" ..
+	"listring[current_player;main]"
+
 minetest.register_node("extrablocks:eating_chest", {
 	description = "Eating Chest",
 	tiles = {{name="extrablocks_eating_chest.png", animation={type="vertical_frames", aspect_w=16, aspect_h=16, length=1.5}},
@@ -261,7 +269,7 @@ minetest.register_node("extrablocks:eating_chest", {
 	sounds = default.node_sound_wood_defaults(),
 	on_construct = function(pos)
 		local meta = minetest.get_meta(pos)
-		meta:set_string("formspec", default.chest_formspec)
+		meta:set_string("formspec", chest_formspec)
 		meta:set_string("infotext", "Hungry Chest")
 		local inv = meta:get_inventory()
 		inv:set_size("main", 8*4)
@@ -271,15 +279,15 @@ minetest.register_node("extrablocks:eating_chest", {
 		local inv = meta:get_inventory()
 		return inv:is_empty("main")
 	end,
-	on_metadata_inventory_move = function(pos, from_list, from_index, to_list, to_index, count, player)
+	on_metadata_inventory_move = function(pos, _,_,_,_,_, player)
 		minetest.log("action", player:get_player_name()..
 				" moves stuff in hungry chest at "..minetest.pos_to_string(pos))
 	end,
-    on_metadata_inventory_put = function(pos, listname, index, stack, player)
+    on_metadata_inventory_put = function(pos, _,_,_, player)
 		minetest.log("action", player:get_player_name()..
 				" moves stuff to hungry chest at "..minetest.pos_to_string(pos))
 	end,
-    on_metadata_inventory_take = function(pos, listname, index, stack, player)
+    on_metadata_inventory_take = function(pos, _,_,_, player)
 		minetest.log("action", player:get_player_name()..
 				" takes stuff from hungry chest at "..minetest.pos_to_string(pos))
 	end,
@@ -289,15 +297,21 @@ minetest.register_abm({
 	nodenames = {"extrablocks:eating_chest"},
 	interval = 1,
 	chance = 1,
-	action = function(pos, node)
+	action = function(pos, node, _, wider_count)
+		if wider_count == 0 then
+			return
+		end
 		local inv = minetest.get_meta(pos):get_inventory()
 		for _, object in pairs(minetest.get_objects_inside_radius({x = pos.x, y = pos.y+0.5, z = pos.z}, .5)) do
-			l = object:get_luaentity()
-			if not object:is_player() and l and l.name == "__builtin:item" then
-				item = l.itemstring
-				if item ~= "" then
-					if inv:room_for_item("main", item) then
+			if not object:is_player() then
+				local l = object:get_luaentity()
+				if l
+				and l.name == "__builtin:item" then
+					item = l.itemstring
+					if item ~= ""
+					and inv:room_for_item("main", item) then
 						inv:add_item("main", item)
+						l.itemstring = ""
 						object:remove()
 						minetest.sound_play("survival_hunger_eat", {pos = pos, gain = 0.5, max_hear_distance = 10})--sounds from hungry games
 						print("[extrablocks] a hungry chest "..minetest.pos_to_string(pos).." ate "..item)
