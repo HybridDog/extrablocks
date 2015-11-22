@@ -776,8 +776,8 @@ local function ore(name, scarcity, num_ores, size, min, max)
 		clust_scarcity 	= scarcity,
 		clust_num_ores	= num_ores,
 		clust_size		= size,
-		height_min		= min,
-		height_max		= max,
+		y_min		= min,
+		y_max		= max,
 	})
 end
 ore("lapis_lazuli_ore", 10*10*10, 3, 10, -150, -80)
@@ -793,8 +793,8 @@ if not minetest.get_modpath("extrablocks") then
 		ore				= "extrablocks:marble_ore",
 		wherein			= "default:stone",
 		clust_size		= 20,
-		height_min		= -100,
-		height_max		= -32,
+		y_min		= -100,
+		y_max		= -32,
 		noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=113, octaves=3, persist=0.70}
 	})
 	minetest.register_ore({
@@ -802,8 +802,8 @@ if not minetest.get_modpath("extrablocks") then
 		ore				= "extrablocks:marble_ore",
 		wherein			= "default:stone",
 		clust_size		= 20,
-		height_min		= -100,
-		height_max		= -90,
+		y_min		= -100,
+		y_max		= -90,
 		noise_params	= {offset=0, scale=1, spread={x=10, y=10, z=10}, seed=112, octaves=3, persist=0.70}
 	})
 end
@@ -813,8 +813,8 @@ minetest.register_ore({
 	ore				= "extrablocks:fokni_gneb_ore",
 	wherein			= "default:stone",
 	clust_size		= 10,
-	height_min		= -10000,
-	height_max		= -6000,
+	y_min		= -10000,
+	y_max		= -6000,
 	noise_params	= {offset=0, scale=1, spread={x=20, y=20, z=20}, seed=114, octaves=3, persist=0.70}
 })
 
