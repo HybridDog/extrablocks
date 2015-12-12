@@ -38,23 +38,24 @@ local jpllist = {}
 minetest.register_craftitem("extrablocks:rocket_bag", {
 	description = "Experimental Rocket Bag",
 	inventory_image = "extrablocks_rbp.png",
-	on_use = function(_, user)
-		if not user then
+	on_use = function(_, player)
+		if not player then
 			return
 		end
-		local username = user:get_player_name()
-		if not username then
+		local playername = player:get_player_name()
+		if not playername then
 			return
 		end
-		local enabled = jpllist[username]
+		local pos = player:getpos()
+		local enabled = jpllist[playername]
 		if enabled then
-			user:set_physics_override({jump=1})
-			jpllist[username] = false
+			player:set_physics_override({jump=1})
+			jpllist[playername] = false
 			off_rocket(pos)
 		else
-			local accel = acc(user)
-			user:set_physics_override({jump=accel})
-			jpllist[username] = true
+			local accel = acc(player)
+			player:set_physics_override({jump=accel})
+			jpllist[playername] = true
 			lit_rocket(pos)
 		end
 		return --necessary because of on_use
