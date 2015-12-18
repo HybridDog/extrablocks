@@ -649,34 +649,43 @@ minetest.register_node("extrablocks:house_redesignor", {
 	end
 })
 
+
+-- depends on vector_extras
+
+local set = vector.set_data_to_pos
+local get = vector.get_data_from_pos
+local remove = vector.remove_data_from_pos
+
 local function get_tab2d(pos, func, max)
-	local count
-	local tab = {pos}
-	local tab_avoid = {[pos.x.." "..pos.y.." "..pos.z] = true}
+	local z,y,x = vector.unpack(pos)
+	local tab = {{z,x}}
+	local tab_avoid = {}
+	set(tab_avoid, z,x,0, true)
 	local tab_done,num = {pos},2
-	while tab[1] do
-		for n,p in pairs(tab) do
-			for i = -1,1,2 do
-				for _,p2 in pairs({
-					{x=p.x+i, y=p.y, z=p.z},
-					{x=p.x, y=p.y, z=p.z+i},
-				}) do
-					local pstr = p2.x.." "..p2.y.." "..p2.z
-					if not tab_avoid[pstr]
-					and func(p2) then
-						tab_avoid[pstr] = true
-						tab_done[num] = p2
-						num = num+1
-						table.insert(tab, p2)
-						if max
-						and num > max then
-							return false
-						end
+	local n = 1
+	while n do
+		local z,x = unpack(tab[n])
+		for i = -1,1,2 do
+			for _,p2 in pairs({
+				{z+i,x},
+				{z,x+i},
+			}) do
+				local z,x = unpack(p2)
+				if not get(tab_avoid, z,x,0)
+				and func({x=x, y=y, z=z}) then
+					set(tab_avoid, z,x,0, true)
+					tab_done[num] = p2
+					num = num+1
+					if max
+					and num > max then
+						return false
 					end
+					table.insert(tab, {z,x})
 				end
 			end
-			tab[n] = nil
 		end
+		tab[n] = nil
+		n = next(tab)
 	end
 	return tab_done
 end
